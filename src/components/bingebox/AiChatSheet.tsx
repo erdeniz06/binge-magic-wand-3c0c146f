@@ -27,7 +27,7 @@ export function AiChatSheet({ open, onOpenChange }: { open: boolean; onOpenChang
   useEffect(() => {
     if (!open || ready) return;
     loadFn()
-      .then((r) => setInitial((r.messages as UIMessage[]) ?? []))
+      .then((r) => setInitial((r.messages as unknown as UIMessage[]) ?? []))
       .catch(() => setInitial([]))
       .finally(() => setReady(true));
   }, [open, ready, loadFn]);
