@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { UIMessage } from "ai";
 
 export const loadAiHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -12,7 +11,7 @@ export const loadAiHistory = createServerFn({ method: "GET" })
       .order("created_at", { ascending: true })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((r) => r.message as unknown as UIMessage);
+    return { messages: (data ?? []).map((r) => r.message) };
   });
 
 export const clearAiHistory = createServerFn({ method: "POST" })
