@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { HomeScreen } from "@/components/bingebox/HomeScreen";
 import { SearchScreen } from "@/components/bingebox/SearchScreen";
-import { BingeWatchScreen } from "@/components/bingebox/BingeWatchScreen";
-import { ListsScreen } from "@/components/bingebox/ListsScreen";
+import { ActivityScreen } from "@/components/bingebox/ActivityScreen";
 import { ProfileScreen } from "@/components/bingebox/ProfileScreen";
 import { BottomNav, type Tab } from "@/components/bingebox/BottomNav";
 import { AiFab } from "@/components/bingebox/AiFab";
@@ -31,8 +30,7 @@ function BingeBoxApp() {
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md relative">
       {tab === "home" && <HomeScreen />}
       {tab === "search" && <SearchScreen />}
-      {tab === "binge" && <BingeWatchScreen />}
-      {tab === "lists" && <ListsScreen />}
+      {tab === "activity" && <ActivityScreen />}
       {tab === "profile" && <ProfileScreen />}
 
       {tab === "home" && <AiFab onClick={() => setAi(true)} />}

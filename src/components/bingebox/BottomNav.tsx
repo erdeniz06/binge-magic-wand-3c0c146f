@@ -1,13 +1,12 @@
-import { Home, Search, List, User, Plus, Activity } from "lucide-react";
+import { Home, Search, User, Plus, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type Tab = "home" | "search" | "binge" | "lists" | "profile";
+export type Tab = "home" | "search" | "activity" | "profile";
 
 const items: { id: Tab; label: string; icon: typeof Home }[] = [
-  { id: "home", label: "Films", icon: Home },
+  { id: "home", label: "Home", icon: Home },
   { id: "search", label: "Search", icon: Search },
-  { id: "binge", label: "BingeWatch", icon: Activity },
-  { id: "lists", label: "Lists", icon: List },
+  { id: "activity", label: "Activity", icon: Activity },
   { id: "profile", label: "Profile", icon: User },
 ];
 
@@ -28,7 +27,7 @@ export function BottomNav({
         ))}
         <button
           onClick={onPlus}
-          className="-mt-7 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition"
+          className="-mt-7 w-14 h-14 rounded-full bg-foreground text-background shadow-lg flex items-center justify-center active:scale-95 transition"
           aria-label="Log activity"
         >
           <Plus className="w-6 h-6" />
@@ -58,9 +57,9 @@ function NavBtn({
         "flex flex-col items-center justify-center w-14 py-1.5 text-[10px] gap-0.5 transition-colors",
         active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
       )}
+      aria-label={it.label}
     >
       <Icon className="w-6 h-6" strokeWidth={active ? 2.4 : 1.8} />
-      <span className="font-medium">{it.label}</span>
     </button>
   );
 }
