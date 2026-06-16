@@ -1,16 +1,24 @@
+import { useState } from "react";
 import { Heart } from "lucide-react";
 import { PosterRow } from "./PosterRow";
+import { BingeWatchScreen } from "./BingeWatchScreen";
+import { ListsScreen } from "./ListsScreen";
+import { JournalScreen } from "./JournalScreen";
 import {
   popularThisWeek,
   friendsWatching,
   greatest100,
   essentialClassicsTR,
 } from "@/lib/bingebox-data";
+import { cn } from "@/lib/utils";
+
+type Top = "films" | "reviews" | "lists" | "journal";
 
 export function HomeScreen() {
+  const [top, setTop] = useState<Top>("films");
+
   return (
-    <div className="space-y-7 pb-32">
-      {/* Top brand strip mirroring the screenshot */}
+    <div className="pb-32">
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
           <div className="flex flex-col">
@@ -32,23 +40,46 @@ export function HomeScreen() {
             <span className="absolute -bottom-1 -left-1 text-[var(--gold)] text-[10px]">★</span>
           </div>
         </div>
+
+        <nav className="mt-5 flex items-center gap-6 border-b border-border">
+          {(["films", "reviews", "lists", "journal"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTop(t)}
+              className={cn(
+                "relative pb-2.5 text-sm capitalize transition",
+                top === t ? "text-foreground font-semibold" : "text-muted-foreground",
+              )}
+            >
+              {t}
+              {top === t && (
+                <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-foreground rounded-full" />
+              )}
+            </button>
+          ))}
+        </nav>
       </header>
 
-      <PosterRow
-        title="100 Greatest Shows"
-        shows={greatest100}
-        accent={<span className="text-xs text-muted-foreground">Curated</span>}
-      />
+      {top === "films" && (
+        <div className="space-y-7 mt-5">
+          <PosterRow
+            title="100 Greatest Shows"
+            shows={greatest100}
+            accent={<span className="text-xs text-muted-foreground">Curated</span>}
+          />
+          <PosterRow
+            title="25 Essential Turkish Classics"
+            shows={essentialClassicsTR}
+            accent={<span className="text-xs text-[var(--classic)]">TR</span>}
+          />
+          <PosterRow title="Popular This Week" shows={popularThisWeek} />
+          <PosterRow title="News From Friends" shows={friendsWatching} />
+        </div>
+      )}
 
-      <PosterRow
-        title="25 Essential Turkish Classics"
-        shows={essentialClassicsTR}
-        accent={<span className="text-xs text-[var(--classic)]">TR</span>}
-      />
-
-      <PosterRow title="Popular This Week" shows={popularThisWeek} />
-
-      <PosterRow title="Popular From Friends" shows={friendsWatching} />
+      {top === "reviews" && <BingeWatchScreen embedded />}
+      {top === "lists" && <ListsScreen embedded />}
+      {top === "journal" && <JournalScreen />}
     </div>
   );
 }
