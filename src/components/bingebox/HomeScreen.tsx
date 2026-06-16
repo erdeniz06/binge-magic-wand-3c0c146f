@@ -77,8 +77,8 @@ export function HomeScreen() {
         </div>
       )}
 
-      {top === "reviews" && <BingeWatchScreen embedded />}
-      {top === "lists" && <ListsScreen embedded />}
+      {top === "reviews" && <BingeWatchScreen />}
+      {top === "lists" && <ListsScreen />}
       {top === "journal" && <JournalScreen />}
     </div>
   );
