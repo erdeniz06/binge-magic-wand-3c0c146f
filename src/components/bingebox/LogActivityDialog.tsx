@@ -1,9 +1,19 @@
 import { useMemo, useState } from "react";
-import { Check, ChevronLeft, Search } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, Clock, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import {
+  popularThisWeek,
+  friendsWatching,
+  greatest100,
+  essentialClassicsTR,
+  genres,
+  decades,
+  languages,
+  countries,
+} from "@/lib/bingebox-data";
 
 type LogMode = "episode" | "season" | "show";
 
@@ -13,16 +23,59 @@ const options: { mode: LogMode; title: string; desc: string }[] = [
   { mode: "show", title: "Log Show", desc: "Mark an entire show as completed" },
 ];
 
-const poster = (seed: string) => `https://picsum.photos/seed/${seed}/160/240`;
+// Aggregate all shows and enrich with seasons metadata for the log flow.
+const seasonsMap: Record<string, number[]> = {
+  "breaking-bad": [7, 13, 13, 13, 16],
+  severance: [9, 10],
+  bear: [8, 10, 10],
+  shogun: [10],
+  from: [10, 10],
+  "off-campus": [8],
+  "law-svu": [22, 22, 22],
+  recruit: [8, 6],
+  daredevil: [9],
+  from2: [10],
+  sopranos: [13, 13, 13, 13, 13, 21],
+  wire: [13, 12, 12, 13, 10],
+  got: [10, 10, 10, 10, 10, 10, 7, 6],
+  chernobyl: [5],
+  succession: [10, 10, 9, 10],
+  kurtlar: [20, 34, 29, 14],
+  behzat: [38, 40, 17, 9],
+  leyla: [23, 45, 17],
+  asmali: [37, 33],
+  ezel: [26, 45, 20],
+};
 
-const shows = [
-  { id: "dark", title: "Dark", year: 2017, poster: poster("log-dark"), seasons: [10, 8, 8] },
-  { id: "severance", title: "Severance", year: 2022, poster: poster("log-severance"), seasons: [9, 10] },
-  { id: "the-bear", title: "The Bear", year: 2022, poster: poster("log-bear"), seasons: [8, 10, 10] },
-  { id: "breaking-bad", title: "Breaking Bad", year: 2008, poster: poster("log-bb"), seasons: [7, 13, 13, 13, 16] },
-  { id: "kurtlar-vadisi", title: "Kurtlar Vadisi", year: 2003, poster: poster("log-kurtlar"), seasons: [20, 34, 29, 14] },
-  { id: "behzat-c", title: "Behzat Ç.", year: 2010, poster: poster("log-behzat"), seasons: [38, 40, 17, 9] },
-];
+const allShows = [
+  ...greatest100,
+  ...essentialClassicsTR,
+  ...popularThisWeek,
+  ...friendsWatching,
+].map((s) => ({ ...s, seasons: seasonsMap[s.id] ?? [10] }));
+
+// Deduplicate by id
+const shows = Array.from(new Map(allShows.map((s) => [s.id, s])).values());
+
+const recentSearches = ["Squid Game", "Severance", "The Bear", "Shōgun"];
+
+function Chip({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) {
+  return (
+    <button className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card hover:bg-accent transition px-3.5 py-1.5 text-xs font-medium">
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
 
 export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [mode, setMode] = useState<LogMode | null>(null);
@@ -33,7 +86,7 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
   const selectedShow = shows.find((s) => s.id === showId) ?? null;
   const filteredShows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return shows;
+    if (!q) return [];
     return shows.filter((s) => s.title.toLowerCase().includes(q));
   }, [query]);
 
@@ -80,7 +133,7 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
           </div>
         </DialogHeader>
 
-        <div className="px-4 pb-4 overflow-y-auto max-h-[72vh]">
+        <div className="px-4 pb-6 overflow-y-auto max-h-[72vh]">
           {!mode && (
             <div className="space-y-2.5 pt-4">
               {options.map((o) => (
@@ -97,35 +150,84 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
           )}
 
           {mode && !selectedShow && (
-            <div className="space-y-4 pt-4">
+            <div className="space-y-7 pt-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search series..."
+                  placeholder="Search series, actors, directors..."
                   className="pl-10 h-11 rounded-full bg-card border-border"
                   autoFocus
                 />
               </div>
-              <div className="space-y-2">
-                {filteredShows.map((show) => (
-                  <button
-                    key={show.id}
-                    onClick={() => {
-                      setShowId(show.id);
-                      setSeason(1);
-                    }}
-                    className="w-full flex items-center gap-3 text-left rounded-xl bg-card border border-border hover:bg-accent transition p-2.5"
-                  >
-                    <img src={show.poster} alt={`${show.title} poster`} className="w-12 h-16 rounded-md object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{show.title}</p>
-                      <p className="text-xs text-muted-foreground">{show.year} · {show.seasons.length} seasons</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+
+              {query.trim() === "" ? (
+                <>
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                    {recentSearches.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setQuery(s)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card hover:bg-accent transition px-3.5 py-1.5 text-xs font-medium whitespace-nowrap"
+                      >
+                        <Clock className="w-3 h-3" />
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Browse by</p>
+
+                  <Section title="Genre">
+                    {genres.slice(0, 9).map((g) => <Chip key={g}>{g}</Chip>)}
+                    <Chip icon={<span className="text-base leading-none">+</span>}>More</Chip>
+                  </Section>
+
+                  <Section title="Decade">
+                    {decades.map((d) => <Chip key={d}>{d}</Chip>)}
+                  </Section>
+
+                  <Section title="Language">
+                    {languages.map((l) => <Chip key={l}>{l}</Chip>)}
+                    <Chip icon={<ChevronDown className="w-3 h-3" />}>Other</Chip>
+                  </Section>
+
+                  <Section title="Country">
+                    {countries.map((c) => <Chip key={c}>{c}</Chip>)}
+                  </Section>
+
+                  <Section title="Rating">
+                    {["9+", "8+", "7+", "Award Winners"].map((r) => <Chip key={r}>{r}</Chip>)}
+                  </Section>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  {filteredShows.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      No results for "{query}"
+                    </p>
+                  )}
+                  {filteredShows.map((show) => (
+                    <button
+                      key={show.id}
+                      onClick={() => {
+                        setShowId(show.id);
+                        setSeason(1);
+                      }}
+                      className="w-full flex items-center gap-3 text-left rounded-xl bg-card border border-border hover:bg-accent transition p-2.5"
+                    >
+                      <img src={show.poster} alt={`${show.title} poster`} className="w-12 h-16 rounded-md object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate">{show.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {show.year} · {show.seasons.length} seasons
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
