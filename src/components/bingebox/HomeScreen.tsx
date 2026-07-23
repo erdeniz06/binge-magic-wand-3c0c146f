@@ -4,6 +4,7 @@ import { PosterRow } from "./PosterRow";
 import { BingeWatchScreen } from "./BingeWatchScreen";
 import { ListsScreen } from "./ListsScreen";
 import { JournalScreen } from "./JournalScreen";
+import { NewsScreen } from "./NewsScreen";
 import {
   popularThisWeek,
   friendsWatching,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/bingebox-data";
 import { cn } from "@/lib/utils";
 
-type Top = "films" | "reviews" | "lists" | "journal";
+type Top = "films" | "reviews" | "lists" | "journal" | "news";
 
 export function HomeScreen() {
   const [top, setTop] = useState<Top>("films");
@@ -41,19 +42,19 @@ export function HomeScreen() {
           </div>
         </div>
 
-        <nav className="mt-5 flex items-center gap-6 border-b border-border">
-          {(["films", "reviews", "lists", "journal"] as const).map((t) => (
+        <nav className="mt-5 flex items-stretch justify-between gap-1 border-b border-border">
+          {(["films", "reviews", "lists", "journal", "news"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTop(t)}
               className={cn(
-                "relative pb-2.5 text-sm capitalize transition",
+                "relative flex-1 pb-2.5 text-sm capitalize transition text-center",
                 top === t ? "text-foreground font-semibold" : "text-muted-foreground",
               )}
             >
               {t}
               {top === t && (
-                <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-foreground rounded-full" />
+                <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-foreground rounded-full" />
               )}
             </button>
           ))}
@@ -80,6 +81,7 @@ export function HomeScreen() {
       {top === "reviews" && <BingeWatchScreen />}
       {top === "lists" && <ListsScreen />}
       {top === "journal" && <JournalScreen />}
+      {top === "news" && <NewsScreen />}
     </div>
   );
 }
