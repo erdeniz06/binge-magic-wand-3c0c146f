@@ -79,4 +79,10 @@
   .shadow-ai { box-shadow: var(--shadow-ai); }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .bingebox-ai-fab {
+    position: fixed;
+    right: max(1rem, calc((100vw - 28rem) / 2 + 1rem));
+    bottom: calc(max(env(safe-area-inset-bottom), 0rem) + 5.75rem);
+    z-index: 35;
+  }
 }

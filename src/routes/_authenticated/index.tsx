@@ -33,7 +33,7 @@ function BingeBoxApp() {
       {tab === "activity" && <ActivityScreen />}
       {tab === "profile" && <ProfileScreen />}
 
-      {tab === "home" && <AiFab onClick={() => setAi(true)} />}
+      <AiFab onClick={() => setAi(true)} />
 
       <BottomNav active={tab} onChange={setTab} onPlus={() => setLog(true)} />
 
