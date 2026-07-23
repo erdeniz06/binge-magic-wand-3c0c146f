@@ -1,9 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const options = [
-  { title: "Log Episode", desc: "Mark an episode as watched" },
-  { title: "Finish Season", desc: "Complete an entire season" },
-  { title: "Finish Show", desc: "Mark entire show as completed" },
+  { title: "Log Episode", desc: "Mark an episode as completed" },
+  { title: "Log Season", desc: "Mark an entire season as completed" },
+  { title: "Log Show", desc: "Mark an entire show as completed" },
 ];
 
 export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
