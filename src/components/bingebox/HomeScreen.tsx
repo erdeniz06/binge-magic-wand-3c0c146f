@@ -33,23 +33,34 @@ function mapTmdb(results: TmdbShow[] | undefined): Show[] {
     }));
 }
 
-type Top = "films" | "reviews" | "lists" | "journal" | "news";
+type Top = "series" | "reviews" | "lists" | "journal" | "news";
+
+function getUserLanguage() {
+  if (typeof navigator === "undefined") return "en-US";
+  const lang = navigator.language || "en-US";
+  // TMDB expects xx-YY format
+  if (lang.length === 2) return `${lang}-${lang.toUpperCase()}`;
+  return lang;
+}
 
 export function HomeScreen() {
-  const [top, setTop] = useState<Top>("films");
+  const [top, setTop] = useState<Top>("series");
+  const userLanguage = getUserLanguage();
 
   const greatestQ = useQuery({
-    queryKey: ["tmdb", "trending", "tv", "week"],
-    queryFn: () => getTvShows({ data: { endpoint: "/trending/tv/week" } }),
+    queryKey: ["tmdb", "trending", "tv", "week", userLanguage],
+    queryFn: () =>
+      getTvShows({ data: { endpoint: "/trending/tv/week", language: userLanguage } }),
     staleTime: 1000 * 60 * 30,
   });
 
   const turkishQ = useQuery({
-    queryKey: ["tmdb", "discover", "tv", "TR"],
+    queryKey: ["tmdb", "discover", "tv", "TR", userLanguage],
     queryFn: () =>
       getTvShows({
         data: {
           endpoint: "/discover/tv",
+          language: userLanguage,
           params: {
             with_origin_country: "TR",
             sort_by: "vote_average.desc",
@@ -88,7 +99,7 @@ export function HomeScreen() {
         </div>
 
         <nav className="mt-5 flex items-stretch justify-between gap-1 border-b border-border">
-          {(["films", "reviews", "lists", "journal", "news"] as const).map((t) => (
+          {(["series", "reviews", "lists", "journal", "news"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTop(t)}
@@ -106,7 +117,7 @@ export function HomeScreen() {
         </nav>
       </header>
 
-      {top === "films" && (
+      {top === "series" && (
         <div className="space-y-7 mt-5">
           <PosterRow
             title="100 Greatest Shows"
