@@ -38,13 +38,26 @@ export function PosterRow({
 }
 
 export function PosterCard({ show }: { show: Show }) {
-  return (
-    <div className="shrink-0 w-32 snap-start">
+  const isNumeric = /^\d+$/.test(show.id);
+  const content = (
+    <>
       <div className="aspect-[2/3] w-full rounded-xl overflow-hidden bg-card ring-1 ring-border">
         <img src={show.poster} alt={show.title} loading="lazy" className="w-full h-full object-cover" />
       </div>
       <p className="mt-2 text-xs font-medium truncate">{show.title}</p>
       <p className="text-[11px] text-muted-foreground">{show.year}</p>
-    </div>
+    </>
   );
+  if (isNumeric) {
+    return (
+      <Link
+        to="/series/tv/$id"
+        params={{ id: show.id }}
+        className="shrink-0 w-32 snap-start"
+      >
+        {content}
+      </Link>
+    );
+  }
+  return <div className="shrink-0 w-32 snap-start">{content}</div>;
 }

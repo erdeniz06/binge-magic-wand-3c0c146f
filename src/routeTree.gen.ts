@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSeriesCategoryRouteImport } from './routes/_authenticated/series.$category'
+import { Route as AuthenticatedSeriesTvIdRouteImport } from './routes/_authenticated/series.tv.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -40,18 +41,25 @@ const AuthenticatedSeriesCategoryRoute =
     path: '/series/$category',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSeriesTvIdRoute = AuthenticatedSeriesTvIdRouteImport.update({
+  id: '/series/tv/$id',
+  path: '/series/tv/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
+  '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
+  '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -60,12 +68,18 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/series/$category': typeof AuthenticatedSeriesCategoryRoute
+  '/_authenticated/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/api/chat' | '/series/$category'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/api/chat'
+    | '/series/$category'
+    | '/series/tv/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/api/chat' | '/' | '/series/$category'
+  to: '/auth' | '/api/chat' | '/' | '/series/$category' | '/series/tv/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -73,6 +87,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/series/$category'
+    | '/_authenticated/series/tv/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,17 +133,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeriesCategoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/series/tv/$id': {
+      id: '/_authenticated/series/tv/$id'
+      path: '/series/tv/$id'
+      fullPath: '/series/tv/$id'
+      preLoaderRoute: typeof AuthenticatedSeriesTvIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedSeriesCategoryRoute: typeof AuthenticatedSeriesCategoryRoute
+  AuthenticatedSeriesTvIdRoute: typeof AuthenticatedSeriesTvIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedSeriesCategoryRoute: AuthenticatedSeriesCategoryRoute,
+  AuthenticatedSeriesTvIdRoute: AuthenticatedSeriesTvIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
