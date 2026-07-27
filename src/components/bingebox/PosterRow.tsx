@@ -1,11 +1,32 @@
+import { Link } from "@tanstack/react-router";
 import type { Show } from "@/lib/bingebox-data";
 
-export function PosterRow({ title, shows, accent }: { title: string; shows: Show[]; accent?: React.ReactNode }) {
+export function PosterRow({
+  title,
+  shows,
+  accent,
+  seeAllTo,
+}: {
+  title: string;
+  shows: Show[];
+  accent?: React.ReactNode;
+  seeAllTo?: string;
+}) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between px-4">
         <h2 className="text-lg font-bold tracking-tight">{title}</h2>
-        {accent}
+        <div className="flex items-center gap-3">
+          {accent}
+          {seeAllTo && (
+            <Link
+              to={seeAllTo}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition"
+            >
+              See All
+            </Link>
+          )}
+        </div>
       </div>
       <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory">
         {shows.map((s) => (
