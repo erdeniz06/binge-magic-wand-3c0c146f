@@ -11,7 +11,7 @@ function getUserLanguage() {
   return lang;
 }
 
-export const Route = createFileRoute("/_authenticated/series/$id")({
+export const Route = createFileRoute("/_authenticated/series/tv/$id")({
   head: () => ({
     meta: [
       { title: "Series — BingeBox" },

@@ -51,7 +51,7 @@ export function PosterCard({ show }: { show: Show }) {
   if (isNumeric) {
     return (
       <Link
-        to="/series/$id"
+        to="/series/tv/$id"
         params={{ id: show.id }}
         className="shrink-0 w-32 snap-start"
       >
