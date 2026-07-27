@@ -122,6 +122,7 @@ export function HomeScreen() {
           <PosterRow
             title="100 Greatest Shows"
             shows={greatestShows}
+            seeAllTo="/series/100-greatest-shows"
             accent={
               <span className="text-xs text-muted-foreground">
                 {greatestQ.isLoading ? "Loading…" : greatestQ.isError ? "Error" : "Curated"}
@@ -131,13 +132,14 @@ export function HomeScreen() {
           <PosterRow
             title="25 Essential Turkish Classics"
             shows={turkishShows}
+            seeAllTo="/series/turkish-classics"
             accent={
               <span className="text-xs text-[var(--classic)]">
                 {turkishQ.isLoading ? "Loading…" : turkishQ.isError ? "Error" : "TR"}
               </span>
             }
           />
-          <PosterRow title="Popular This Week" shows={popularThisWeek} />
+          <PosterRow title="Popular This Week" shows={popularThisWeek} seeAllTo="/series/popular-this-week" />
           <PosterRow title="News From Friends" shows={friendsWatching} />
         </div>
       )}
