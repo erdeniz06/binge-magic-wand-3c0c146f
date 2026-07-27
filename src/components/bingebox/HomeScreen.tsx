@@ -99,7 +99,7 @@ export function HomeScreen() {
         </div>
 
         <nav className="mt-5 flex items-stretch justify-between gap-1 border-b border-border">
-          {(["films", "reviews", "lists", "journal", "news"] as const).map((t) => (
+          {(["series", "reviews", "lists", "journal", "news"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTop(t)}
@@ -117,7 +117,7 @@ export function HomeScreen() {
         </nav>
       </header>
 
-      {top === "films" && (
+      {top === "series" && (
         <div className="space-y-7 mt-5">
           <PosterRow
             title="100 Greatest Shows"
