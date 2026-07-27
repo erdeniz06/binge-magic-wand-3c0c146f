@@ -68,6 +68,27 @@ export type Database = {
         }
         Relationships: []
       }
+      tmdb_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          data: Json
+          id: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          data: Json
+          id?: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
