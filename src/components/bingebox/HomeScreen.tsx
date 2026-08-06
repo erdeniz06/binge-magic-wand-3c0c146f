@@ -150,15 +150,26 @@ export function HomeScreen() {
             }
           />
           <PosterRow
+            title="Top Rated Shows (100K+ Votes)"
+            shows={topRatedShows}
+            seeAllTo="/series/curated/top_rated_100k"
+            accent={
+              <span className="text-xs text-muted-foreground">
+                {topRatedQ.isLoading ? "Loading…" : topRatedQ.isError ? "Error" : "Curated"}
+              </span>
+            }
+          />
+          <PosterRow
             title="25 Essential Turkish Classics"
             shows={turkishShows}
-            seeAllTo="/series/turkish-classics"
+            seeAllTo="/series/curated/turkish_classics"
             accent={
               <span className="text-xs text-[var(--classic)]">
                 {turkishQ.isLoading ? "Loading…" : turkishQ.isError ? "Error" : "TR"}
               </span>
             }
           />
+
           <PosterRow
             title="Popular This Week"
             shows={popularShows}
