@@ -53,6 +53,16 @@ type Videos = {
   }[];
 };
 
+type Reviews = {
+  results: {
+    id: string;
+    author: string;
+    content: string;
+    created_at: string;
+    author_details?: { rating: number | null; avatar_path: string | null };
+  }[];
+};
+
 function SeriesDetailPage() {
   const { id } = Route.useParams();
   const language = getUserLanguage();
@@ -85,9 +95,19 @@ function SeriesDetailPage() {
     staleTime: 1000 * 60 * 30,
   });
 
+  const reviewsQ = useQuery({
+    queryKey: ["tmdb", "tv", id, "reviews", language],
+    queryFn: () =>
+      getTvShows({
+        data: { endpoint: `/tv/${id}/reviews`, language },
+      }) as Promise<unknown>,
+    staleTime: 1000 * 60 * 30,
+  });
+
   const detail = detailQ.data as TvDetail | undefined;
   const credits = creditsQ.data as Credits | undefined;
   const videos = videosQ.data as Videos | undefined;
+  const reviews = (reviewsQ.data as Reviews | undefined)?.results ?? [];
 
   const trailer = videos?.results?.find(
     (v) => v.site === "YouTube" && v.type === "Trailer",
@@ -213,6 +233,49 @@ function SeriesDetailPage() {
               </div>
             </section>
           )}
+
+          <section className="px-4 mt-6">
+            <h3 className="text-sm font-bold mb-3">Yorumlar</h3>
+            {reviewsQ.isLoading ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="space-y-3">
+                {reviews.map((r) => (
+                  <article
+                    key={r.id}
+                    className="rounded-xl bg-card ring-1 ring-border p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold truncate">{r.author}</p>
+                      {r.author_details?.rating != null && (
+                        <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground shrink-0">
+                          <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
+                          {r.author_details.rating}/10
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed line-clamp-6 whitespace-pre-line">
+                      {r.content}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl bg-card ring-1 ring-border p-5 text-center">
+                <p className="text-xs text-muted-foreground">
+                  Henüz yorum yok, ilk yorumu sen yaz
+                </p>
+                <button
+                  disabled
+                  className="mt-3 rounded-full bg-muted text-muted-foreground px-4 py-2 text-xs font-semibold opacity-60 cursor-not-allowed"
+                >
+                  Yorum Yaz
+                </button>
+              </div>
+            )}
+          </section>
         </>
       )}
 
