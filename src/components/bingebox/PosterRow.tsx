@@ -45,7 +45,7 @@ export function PosterCard({ show }: { show: Show }) {
         <img src={show.poster} alt={show.title} loading="lazy" className="w-full h-full object-cover" />
       </div>
       <p className="mt-2 text-xs font-medium truncate">{show.title}</p>
-      <p className="text-[11px] text-muted-foreground">{show.year}</p>
+      {show.year ? <p className="text-[11px] text-muted-foreground">{show.year}</p> : null}
     </>
   );
   if (isNumeric) {
