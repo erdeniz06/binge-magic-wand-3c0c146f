@@ -15,6 +15,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSeriesCategoryRouteImport } from './routes/_authenticated/series.$category'
 import { Route as AuthenticatedSeriesTvIdRouteImport } from './routes/_authenticated/series.tv.$id'
+import { Route as AuthenticatedSeriesCuratedListRouteImport } from './routes/_authenticated/series.curated.$list'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -46,12 +47,19 @@ const AuthenticatedSeriesTvIdRoute = AuthenticatedSeriesTvIdRouteImport.update({
   path: '/series/tv/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSeriesCuratedListRoute =
+  AuthenticatedSeriesCuratedListRouteImport.update({
+    id: '/series/curated/$list',
+    path: '/series/curated/$list',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
+  '/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
 export interface FileRoutesByTo {
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
+  '/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
 export interface FileRoutesById {
@@ -68,6 +77,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/series/$category': typeof AuthenticatedSeriesCategoryRoute
+  '/_authenticated/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/_authenticated/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
 export interface FileRouteTypes {
@@ -77,9 +87,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/series/$category'
+    | '/series/curated/$list'
     | '/series/tv/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/api/chat' | '/' | '/series/$category' | '/series/tv/$id'
+  to:
+    | '/auth'
+    | '/api/chat'
+    | '/'
+    | '/series/$category'
+    | '/series/curated/$list'
+    | '/series/tv/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -87,6 +104,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/series/$category'
+    | '/_authenticated/series/curated/$list'
     | '/_authenticated/series/tv/$id'
   fileRoutesById: FileRoutesById
 }
@@ -140,18 +158,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeriesTvIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/series/curated/$list': {
+      id: '/_authenticated/series/curated/$list'
+      path: '/series/curated/$list'
+      fullPath: '/series/curated/$list'
+      preLoaderRoute: typeof AuthenticatedSeriesCuratedListRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedSeriesCategoryRoute: typeof AuthenticatedSeriesCategoryRoute
+  AuthenticatedSeriesCuratedListRoute: typeof AuthenticatedSeriesCuratedListRoute
   AuthenticatedSeriesTvIdRoute: typeof AuthenticatedSeriesTvIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedSeriesCategoryRoute: AuthenticatedSeriesCategoryRoute,
+  AuthenticatedSeriesCuratedListRoute: AuthenticatedSeriesCuratedListRoute,
   AuthenticatedSeriesTvIdRoute: AuthenticatedSeriesTvIdRoute,
 }
 
@@ -166,13 +193,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

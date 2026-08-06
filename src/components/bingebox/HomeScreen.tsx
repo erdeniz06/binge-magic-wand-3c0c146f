@@ -8,11 +8,14 @@ import { JournalScreen } from "./JournalScreen";
 import { NewsScreen } from "./NewsScreen";
 import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { getCuratedList } from "@/lib/curated.functions";
 import { cn } from "@/lib/utils";
 
 type TmdbShow = {
   id: number;
   name: string;
+  original_name?: string;
+  origin_country?: string[];
   poster_path: string | null;
   first_air_date: string;
 };
@@ -23,11 +26,14 @@ function mapTmdb(results: TmdbShow[] | undefined): Show[] {
     .filter((r) => r.poster_path)
     .map((r) => ({
       id: String(r.id),
-      title: r.name,
+      // Turkish productions keep their original Turkish title
+      title:
+        r.origin_country?.includes("TR") && r.original_name ? r.original_name : r.name,
       year: r.first_air_date ? Number(r.first_air_date.slice(0, 4)) : 0,
       poster: `${TMDB_IMAGE_BASE}${r.poster_path}`,
     }));
 }
+
 
 type Top = "series" | "reviews" | "lists" | "journal" | "news";
 
