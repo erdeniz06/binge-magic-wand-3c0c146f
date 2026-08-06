@@ -6,10 +6,6 @@ import { BingeWatchScreen } from "./BingeWatchScreen";
 import { ListsScreen } from "./ListsScreen";
 import { JournalScreen } from "./JournalScreen";
 import { NewsScreen } from "./NewsScreen";
-import {
-  popularThisWeek,
-  friendsWatching,
-} from "@/lib/bingebox-data";
 import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { cn } from "@/lib/utils";
@@ -71,8 +67,16 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 30,
   });
 
+  const popularQ = useQuery({
+    queryKey: ["tmdb", "popular", "tv", userLanguage],
+    queryFn: () =>
+      getTvShows({ data: { endpoint: "/tv/popular", language: userLanguage } }),
+    staleTime: 1000 * 60 * 30,
+  });
+
   const greatestShows = mapTmdb(greatestQ.data?.results);
   const turkishShows = mapTmdb(turkishQ.data?.results);
+  const popularShows = mapTmdb(popularQ.data?.results);
 
   return (
     <div className="pb-32">
@@ -139,8 +143,16 @@ export function HomeScreen() {
               </span>
             }
           />
-          <PosterRow title="Popular This Week" shows={popularThisWeek} seeAllTo="/series/popular-this-week" />
-          <PosterRow title="News From Friends" shows={friendsWatching} />
+          <PosterRow
+            title="Popular This Week"
+            shows={popularShows}
+            seeAllTo="/series/popular-this-week"
+            accent={
+              <span className="text-xs text-muted-foreground">
+                {popularQ.isLoading ? "Loading…" : popularQ.isError ? "Error" : ""}
+              </span>
+            }
+          />
         </div>
       )}
 
