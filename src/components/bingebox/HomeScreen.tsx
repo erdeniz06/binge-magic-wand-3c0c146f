@@ -8,11 +8,14 @@ import { JournalScreen } from "./JournalScreen";
 import { NewsScreen } from "./NewsScreen";
 import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { getCuratedList } from "@/lib/curated.functions";
 import { cn } from "@/lib/utils";
 
 type TmdbShow = {
   id: number;
   name: string;
+  original_name?: string;
+  origin_country?: string[];
   poster_path: string | null;
   first_air_date: string;
 };
@@ -23,11 +26,27 @@ function mapTmdb(results: TmdbShow[] | undefined): Show[] {
     .filter((r) => r.poster_path)
     .map((r) => ({
       id: String(r.id),
-      title: r.name,
+      // Turkish productions keep their original Turkish title
+      title:
+        r.origin_country?.includes("TR") && r.original_name ? r.original_name : r.name,
       year: r.first_air_date ? Number(r.first_air_date.slice(0, 4)) : 0,
       poster: `${TMDB_IMAGE_BASE}${r.poster_path}`,
     }));
 }
+
+function mapCurated(
+  items: { rank: number; tmdb_id: number; title: string; poster_path: string | null }[] | undefined,
+): Show[] {
+  if (!items) return [];
+  return items.map((i) => ({
+    id: String(i.tmdb_id),
+    title: i.title,
+    year: 0,
+    poster: i.poster_path ? `${TMDB_IMAGE_BASE}${i.poster_path}` : "",
+  }));
+}
+
+
 
 type Top = "series" | "reviews" | "lists" | "journal" | "news";
 
@@ -51,20 +70,15 @@ export function HomeScreen() {
   });
 
   const turkishQ = useQuery({
-    queryKey: ["tmdb", "discover", "tv", "TR", userLanguage],
-    queryFn: () =>
-      getTvShows({
-        data: {
-          endpoint: "/discover/tv",
-          language: userLanguage,
-          params: {
-            with_origin_country: "TR",
-            sort_by: "vote_average.desc",
-            "vote_count.gte": "50",
-          },
-        },
-      }),
-    staleTime: 1000 * 60 * 30,
+    queryKey: ["curated", "turkish_classics"],
+    queryFn: () => getCuratedList({ data: { listName: "turkish_classics" } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const topRatedQ = useQuery({
+    queryKey: ["curated", "top_rated_100k"],
+    queryFn: () => getCuratedList({ data: { listName: "top_rated_100k" } }),
+    staleTime: 1000 * 60 * 60,
   });
 
   const popularQ = useQuery({
@@ -75,8 +89,10 @@ export function HomeScreen() {
   });
 
   const greatestShows = mapTmdb(greatestQ.data?.results);
-  const turkishShows = mapTmdb(turkishQ.data?.results);
+  const turkishShows = mapCurated(turkishQ.data);
+  const topRatedShows = mapCurated(topRatedQ.data);
   const popularShows = mapTmdb(popularQ.data?.results);
+
 
   return (
     <div className="pb-32">
@@ -134,15 +150,26 @@ export function HomeScreen() {
             }
           />
           <PosterRow
+            title="Top Rated Shows (100K+ Votes)"
+            shows={topRatedShows}
+            seeAllTo="/series/curated/top_rated_100k"
+            accent={
+              <span className="text-xs text-muted-foreground">
+                {topRatedQ.isLoading ? "Loading…" : topRatedQ.isError ? "Error" : "Curated"}
+              </span>
+            }
+          />
+          <PosterRow
             title="25 Essential Turkish Classics"
             shows={turkishShows}
-            seeAllTo="/series/turkish-classics"
+            seeAllTo="/series/curated/turkish_classics"
             accent={
               <span className="text-xs text-[var(--classic)]">
                 {turkishQ.isLoading ? "Loading…" : turkishQ.isError ? "Error" : "TR"}
               </span>
             }
           />
+
           <PosterRow
             title="Popular This Week"
             shows={popularShows}
