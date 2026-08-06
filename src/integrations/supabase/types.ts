@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      curated_lists: {
+        Row: {
+          created_at: string
+          id: string
+          list_name: string
+          poster_path: string | null
+          rank: number
+          title: string
+          tmdb_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          list_name: string
+          poster_path?: string | null
+          rank: number
+          title: string
+          tmdb_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          list_name?: string
+          poster_path?: string | null
+          rank?: number
+          title?: string
+          tmdb_id?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           country: string | null
