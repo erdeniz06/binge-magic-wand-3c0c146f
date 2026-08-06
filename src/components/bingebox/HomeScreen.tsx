@@ -57,20 +57,15 @@ export function HomeScreen() {
   });
 
   const turkishQ = useQuery({
-    queryKey: ["tmdb", "discover", "tv", "TR", userLanguage],
-    queryFn: () =>
-      getTvShows({
-        data: {
-          endpoint: "/discover/tv",
-          language: userLanguage,
-          params: {
-            with_origin_country: "TR",
-            sort_by: "vote_average.desc",
-            "vote_count.gte": "50",
-          },
-        },
-      }),
-    staleTime: 1000 * 60 * 30,
+    queryKey: ["curated", "turkish_classics"],
+    queryFn: () => getCuratedList({ data: { listName: "turkish_classics" } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const topRatedQ = useQuery({
+    queryKey: ["curated", "top_rated_100k"],
+    queryFn: () => getCuratedList({ data: { listName: "top_rated_100k" } }),
+    staleTime: 1000 * 60 * 60,
   });
 
   const popularQ = useQuery({
@@ -81,8 +76,10 @@ export function HomeScreen() {
   });
 
   const greatestShows = mapTmdb(greatestQ.data?.results);
-  const turkishShows = mapTmdb(turkishQ.data?.results);
+  const turkishShows = mapCurated(turkishQ.data);
+  const topRatedShows = mapCurated(topRatedQ.data);
   const popularShows = mapTmdb(popularQ.data?.results);
+
 
   return (
     <div className="pb-32">
