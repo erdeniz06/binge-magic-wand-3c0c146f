@@ -34,6 +34,19 @@ function mapTmdb(results: TmdbShow[] | undefined): Show[] {
     }));
 }
 
+function mapCurated(
+  items: { rank: number; tmdb_id: number; title: string; poster_path: string | null }[] | undefined,
+): Show[] {
+  if (!items) return [];
+  return items.map((i) => ({
+    id: String(i.tmdb_id),
+    title: i.title,
+    year: 0,
+    poster: i.poster_path ? `${TMDB_IMAGE_BASE}${i.poster_path}` : "",
+  }));
+}
+
+
 
 type Top = "series" | "reviews" | "lists" | "journal" | "news";
 
