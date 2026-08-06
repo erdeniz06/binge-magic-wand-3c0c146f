@@ -53,6 +53,16 @@ type Videos = {
   }[];
 };
 
+type Reviews = {
+  results: {
+    id: string;
+    author: string;
+    content: string;
+    created_at: string;
+    author_details?: { rating: number | null; avatar_path: string | null };
+  }[];
+};
+
 function SeriesDetailPage() {
   const { id } = Route.useParams();
   const language = getUserLanguage();
@@ -85,9 +95,19 @@ function SeriesDetailPage() {
     staleTime: 1000 * 60 * 30,
   });
 
+  const reviewsQ = useQuery({
+    queryKey: ["tmdb", "tv", id, "reviews", language],
+    queryFn: () =>
+      getTvShows({
+        data: { endpoint: `/tv/${id}/reviews`, language },
+      }) as Promise<unknown>,
+    staleTime: 1000 * 60 * 30,
+  });
+
   const detail = detailQ.data as TvDetail | undefined;
   const credits = creditsQ.data as Credits | undefined;
   const videos = videosQ.data as Videos | undefined;
+  const reviews = (reviewsQ.data as Reviews | undefined)?.results ?? [];
 
   const trailer = videos?.results?.find(
     (v) => v.site === "YouTube" && v.type === "Trailer",
