@@ -4,6 +4,8 @@ export type Show = {
   year: number;
   poster: string;
   country?: string;
+  rating?: number;
+  votes?: number;
 };
 
 const poster = (seed: string, w = 400, h = 600) =>
