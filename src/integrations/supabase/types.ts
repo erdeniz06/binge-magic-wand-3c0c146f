@@ -47,6 +47,8 @@ export type Database = {
           rank: number
           title: string
           tmdb_id: number
+          vote_average: number | null
+          vote_count: number | null
         }
         Insert: {
           created_at?: string
@@ -56,6 +58,8 @@ export type Database = {
           rank: number
           title: string
           tmdb_id: number
+          vote_average?: number | null
+          vote_count?: number | null
         }
         Update: {
           created_at?: string
@@ -65,6 +69,8 @@ export type Database = {
           rank?: number
           title?: string
           tmdb_id?: number
+          vote_average?: number | null
+          vote_count?: number | null
         }
         Relationships: []
       }
