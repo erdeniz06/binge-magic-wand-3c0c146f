@@ -1,105 +1,111 @@
-import { Newspaper, Megaphone, Star, CalendarClock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Newspaper, CalendarClock, Tv } from "lucide-react";
+import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 
-type NewsItem = {
-  id: string;
-  kind: "announcement" | "quote" | "anniversary" | "renewal";
-  show: string;
-  headline: string;
-  body: string;
-  source: string;
-  time: string;
-  image: string;
+type TmdbItem = {
+  id: number;
+  name: string;
+  original_name?: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  first_air_date: string;
+  vote_average: number;
+  origin_country?: string[];
 };
 
-const news: NewsItem[] = [
-  {
-    id: "n1",
-    kind: "renewal",
-    show: "Severance",
-    headline: "Severance Season 3 officially begins filming",
-    body: "Apple TV+ confirmed cameras are rolling on the third season, with Ben Stiller returning to direct the premiere.",
-    source: "Variety",
-    time: "2h ago",
-    image: "https://picsum.photos/seed/news-severance/600/360",
-  },
-  {
-    id: "n2",
-    kind: "quote",
-    show: "Breaking Bad",
-    headline: "Bryan Cranston hints at a one-off Walter White return",
-    body: "In a recent podcast, Cranston said he'd revisit Heisenberg 'only if Vince Gilligan writes it'.",
-    source: "The Hollywood Reporter",
-    time: "6h ago",
-    image: "https://picsum.photos/seed/news-bb/600/360",
-  },
-  {
-    id: "n3",
-    kind: "announcement",
-    show: "Shōgun",
-    headline: "Shōgun renewed for two more seasons at FX",
-    body: "After sweeping the Emmys, FX has greenlit seasons 2 and 3 with the original creative team attached.",
-    source: "Deadline",
-    time: "1d ago",
-    image: "https://picsum.photos/seed/news-shogun/600/360",
-  },
-  {
-    id: "n4",
-    kind: "anniversary",
-    show: "Breaking Bad",
-    headline: "Breaking Bad turns 18 today",
-    body: "The pilot aired on January 20, 2008. Looking back at how a chemistry teacher rewrote prestige TV.",
-    source: "BingeBox Editorial",
-    time: "1d ago",
-    image: "https://picsum.photos/seed/news-anniversary/600/360",
-  },
-  {
-    id: "n5",
-    kind: "announcement",
-    show: "The Last of Us",
-    headline: "The Last of Us S3 casts a new lead",
-    body: "HBO revealed the actor stepping into a major role adapted from Part II's later chapters.",
-    source: "IGN",
-    time: "2d ago",
-    image: "https://picsum.photos/seed/news-tlou/600/360",
-  },
-];
-
-const kindMeta: Record<NewsItem["kind"], { label: string; Icon: typeof Newspaper }> = {
-  announcement: { label: "Announcement", Icon: Megaphone },
-  quote: { label: "Quote", Icon: Star },
-  anniversary: { label: "Anniversary", Icon: CalendarClock },
-  renewal: { label: "Renewal", Icon: Newspaper },
-};
+function getUserLanguage() {
+  if (typeof navigator === "undefined") return "en-US";
+  const lang = navigator.language || "en-US";
+  if (lang.length === 2) return `${lang}-${lang.toUpperCase()}`;
+  return lang;
+}
 
 export function NewsScreen() {
+  const language = getUserLanguage();
+
+  const airingQ = useQuery({
+    queryKey: ["tmdb", "airing_today", language],
+    queryFn: () => getTvShows({ data: { endpoint: "/tv/airing_today", language } }),
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const onTheAirQ = useQuery({
+    queryKey: ["tmdb", "on_the_air", language],
+    queryFn: () => getTvShows({ data: { endpoint: "/tv/on_the_air", language } }),
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const isLoading = airingQ.isLoading || onTheAirQ.isLoading;
+  const isError = airingQ.isError && onTheAirQ.isError;
+
+  const airing = ((airingQ.data?.results ?? []) as TmdbItem[]).slice(0, 4);
+  const onAir = ((onTheAirQ.data?.results ?? []) as TmdbItem[])
+    .filter((s) => !airing.some((a) => a.id === s.id))
+    .slice(0, 8);
+
+  const items: { item: TmdbItem; label: string; Icon: typeof Newspaper }[] = [
+    ...airing.map((item) => ({ item, label: "Airing today", Icon: CalendarClock })),
+    ...onAir.map((item) => ({ item, label: "Now on air", Icon: Tv })),
+  ];
+
   return (
     <div className="px-4 mt-5 space-y-5 pb-4">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">The Daily Binge</p>
-        <span className="text-[10px] text-muted-foreground">Curated · updated hourly</span>
+        <span className="text-[10px] text-muted-foreground">Live from TMDB</span>
       </div>
 
-      {news.map((n, i) => {
-        const { label, Icon } = kindMeta[n.kind];
+      {isLoading && (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-28 rounded-2xl bg-card border border-border animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <p className="text-sm text-muted-foreground">
+          Haberler şu an yüklenemedi. Daha sonra tekrar dene.
+        </p>
+      )}
+
+      {!isLoading && !isError && items.length === 0 && (
+        <p className="text-sm text-muted-foreground">Şu an gösterilecek bir gelişme yok.</p>
+      )}
+
+      {items.map(({ item, label, Icon }, i) => {
+        const title = item.origin_country?.includes("TR") && item.original_name
+          ? item.original_name
+          : item.name;
+        const hero = i === 0 && (item.backdrop_path || item.poster_path);
         return (
-          <article key={n.id} className="rounded-2xl bg-card border border-border overflow-hidden">
-            {i === 0 && (
+          <article key={item.id} className="rounded-2xl bg-card border border-border overflow-hidden">
+            {hero && (
               <div className="aspect-[16/9] w-full bg-muted overflow-hidden">
-                <img src={n.image} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={`${TMDB_IMAGE_BASE}${item.backdrop_path ?? item.poster_path}`}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                />
               </div>
             )}
             <div className="p-4 space-y-2">
               <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
                 <Icon className="w-3.5 h-3.5" />
                 <span>{label}</span>
-                <span className="opacity-50">·</span>
-                <span className="text-foreground/80 normal-case tracking-normal font-medium">{n.show}</span>
               </div>
-              <h3 className="text-base font-bold leading-snug">{n.headline}</h3>
-              <p className="text-xs text-foreground/80 leading-relaxed">{n.body}</p>
+              <h3 className="text-base font-bold leading-snug">{title}</h3>
+              {item.overview ? (
+                <p className="text-xs text-foreground/80 leading-relaxed line-clamp-3">{item.overview}</p>
+              ) : null}
               <div className="flex items-center justify-between pt-1">
-                <p className="text-[11px] text-muted-foreground">{n.source}</p>
-                <p className="text-[11px] text-muted-foreground">{n.time}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {item.first_air_date ? item.first_air_date.slice(0, 4) : "—"}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {item.vote_average ? `★ ${item.vote_average.toFixed(1)}` : ""}
+                </p>
               </div>
             </div>
           </article>
