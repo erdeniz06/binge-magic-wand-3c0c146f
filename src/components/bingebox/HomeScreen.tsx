@@ -63,9 +63,6 @@ export function HomeScreen() {
   const userLanguage = getUserLanguage();
 
   const turkishQ = useQuery({
-
-
-  const turkishQ = useQuery({
     queryKey: ["curated", "turkish_classics"],
     queryFn: () => getCuratedList({ data: { listName: "turkish_classics" } }),
     staleTime: 1000 * 60 * 60,
