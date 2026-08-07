@@ -13,7 +13,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as ApiPublicBackfillRatingsRouteImport } from './routes/api/public/backfill-ratings'
 import { Route as AuthenticatedSeriesCategoryRouteImport } from './routes/_authenticated/series.$category'
 import { Route as AuthenticatedSeriesTvIdRouteImport } from './routes/_authenticated/series.tv.$id'
 import { Route as AuthenticatedSeriesCuratedListRouteImport } from './routes/_authenticated/series.curated.$list'
@@ -37,12 +36,6 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicBackfillRatingsRoute =
-  ApiPublicBackfillRatingsRouteImport.update({
-    id: '/api/public/backfill-ratings',
-    path: '/api/public/backfill-ratings',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedSeriesCategoryRoute =
   AuthenticatedSeriesCategoryRouteImport.update({
     id: '/series/$category',
@@ -66,7 +59,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
-  '/api/public/backfill-ratings': typeof ApiPublicBackfillRatingsRoute
   '/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
@@ -75,7 +67,6 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
-  '/api/public/backfill-ratings': typeof ApiPublicBackfillRatingsRoute
   '/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
@@ -86,7 +77,6 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/series/$category': typeof AuthenticatedSeriesCategoryRoute
-  '/api/public/backfill-ratings': typeof ApiPublicBackfillRatingsRoute
   '/_authenticated/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/_authenticated/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
 }
@@ -97,7 +87,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/series/$category'
-    | '/api/public/backfill-ratings'
     | '/series/curated/$list'
     | '/series/tv/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -106,7 +95,6 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/'
     | '/series/$category'
-    | '/api/public/backfill-ratings'
     | '/series/curated/$list'
     | '/series/tv/$id'
   id:
@@ -116,7 +104,6 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/series/$category'
-    | '/api/public/backfill-ratings'
     | '/_authenticated/series/curated/$list'
     | '/_authenticated/series/tv/$id'
   fileRoutesById: FileRoutesById
@@ -125,7 +112,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
-  ApiPublicBackfillRatingsRoute: typeof ApiPublicBackfillRatingsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -156,13 +142,6 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/backfill-ratings': {
-      id: '/api/public/backfill-ratings'
-      path: '/api/public/backfill-ratings'
-      fullPath: '/api/public/backfill-ratings'
-      preLoaderRoute: typeof ApiPublicBackfillRatingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/series/$category': {
@@ -210,7 +189,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
-  ApiPublicBackfillRatingsRoute: ApiPublicBackfillRatingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

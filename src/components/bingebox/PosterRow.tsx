@@ -1,17 +1,46 @@
+import { useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
+import { Star } from "lucide-react";
 import type { Show } from "@/lib/bingebox-data";
+
+function formatVotes(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1000)}K`;
+  return String(n);
+}
 
 export function PosterRow({
   title,
   shows,
   accent,
   seeAllTo,
+  showRating,
+  onReachEnd,
+  loadingMore,
 }: {
   title: string;
   shows: Show[];
   accent?: React.ReactNode;
   seeAllTo?: string;
+  showRating?: boolean;
+  onReachEnd?: () => void;
+  loadingMore?: boolean;
 }) {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !onReachEnd) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) onReachEnd();
+      },
+      { root: el.parentElement, threshold: 0.1 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [onReachEnd, shows.length]);
+
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between px-4">
@@ -29,32 +58,63 @@ export function PosterRow({
         </div>
       </div>
       <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory">
-        {shows.map((s) => (
-          <PosterCard key={s.id} show={s} />
+        {shows.map((s, i) => (
+          <PosterCard key={`${s.id}-${i}`} show={s} rank={showRating ? i + 1 : undefined} showRating={showRating} />
         ))}
+        {(onReachEnd || seeAllTo) && (
+          <div ref={sentinelRef} className="shrink-0 w-32 flex items-center justify-center">
+            {loadingMore ? (
+              <span className="text-[11px] text-muted-foreground">Yükleniyor…</span>
+            ) : seeAllTo ? (
+              <Link
+                to={seeAllTo}
+                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground text-center px-2"
+              >
+                Tüm listeyi gör →
+              </Link>
+            ) : null}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-export function PosterCard({ show }: { show: Show }) {
+export function PosterCard({
+  show,
+  rank,
+  showRating,
+}: {
+  show: Show;
+  rank?: number;
+  showRating?: boolean;
+}) {
   const isNumeric = /^\d+$/.test(show.id);
   const content = (
     <>
-      <div className="aspect-[2/3] w-full rounded-xl overflow-hidden bg-card ring-1 ring-border">
+      <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-card ring-1 ring-border">
         <img src={show.poster} alt={show.title} loading="lazy" className="w-full h-full object-cover" />
+        {rank ? (
+          <span className="absolute top-1 left-1 rounded-md bg-background/85 backdrop-blur px-1.5 py-0.5 text-[10px] font-extrabold">
+            #{rank}
+          </span>
+        ) : null}
       </div>
       <p className="mt-2 text-xs font-medium truncate">{show.title}</p>
-      {show.year ? <p className="text-[11px] text-muted-foreground">{show.year}</p> : null}
+      {showRating && show.rating ? (
+        <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
+          <span className="font-semibold text-foreground">{show.rating.toFixed(1)}</span>
+          {show.votes ? <span>({formatVotes(show.votes)})</span> : null}
+        </p>
+      ) : show.year ? (
+        <p className="text-[11px] text-muted-foreground">{show.year}</p>
+      ) : null}
     </>
   );
   if (isNumeric) {
     return (
-      <Link
-        to="/series/tv/$id"
-        params={{ id: show.id }}
-        className="shrink-0 w-32 snap-start"
-      >
+      <Link to="/series/tv/$id" params={{ id: show.id }} className="shrink-0 w-32 snap-start">
         {content}
       </Link>
     );
