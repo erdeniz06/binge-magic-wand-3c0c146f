@@ -8,6 +8,8 @@ export type CuratedItem = {
   tmdb_id: number;
   title: string;
   poster_path: string | null;
+  vote_average: number | null;
+  vote_count: number | null;
 };
 
 export const getCuratedList = createServerFn({ method: "GET" })
@@ -30,7 +32,7 @@ export const getCuratedList = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await supabasePublic
       .from("curated_lists")
-      .select("rank, tmdb_id, title, poster_path")
+      .select("rank, tmdb_id, title, poster_path, vote_average, vote_count")
       .eq("list_name", data.listName)
       .order("rank", { ascending: true });
 
