@@ -81,7 +81,7 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 30,
   });
 
-  const greatestShows = mapTmdb(greatestQ.data?.results);
+  const turkishShows = mapCurated(turkishQ.data);
   const turkishShows = mapCurated(turkishQ.data);
   const topRatedShows = mapCurated(topRatedQ.data);
   const popularShows = mapTmdb(popularQ.data?.results);
@@ -132,16 +132,6 @@ export function HomeScreen() {
 
       {top === "series" && (
         <div className="space-y-7 mt-5">
-          <PosterRow
-            title="100 Greatest Shows"
-            shows={greatestShows}
-            seeAllTo="/series/100-greatest-shows"
-            accent={
-              <span className="text-xs text-muted-foreground">
-                {greatestQ.isLoading ? "Loading…" : greatestQ.isError ? "Error" : "Curated"}
-              </span>
-            }
-          />
           <PosterRow
             title="Top Rated Shows (100K+ Votes)"
             shows={topRatedShows}
