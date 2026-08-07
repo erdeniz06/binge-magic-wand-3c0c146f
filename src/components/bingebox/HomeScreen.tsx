@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Heart } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { PosterRow } from "./PosterRow";
 import { BingeWatchScreen } from "./BingeWatchScreen";
 import { ListsScreen } from "./ListsScreen";
@@ -18,6 +19,8 @@ type TmdbShow = {
   origin_country?: string[];
   poster_path: string | null;
   first_air_date: string;
+  vote_average?: number;
+  vote_count?: number;
 };
 
 function mapTmdb(results: TmdbShow[] | undefined): Show[] {
@@ -31,11 +34,22 @@ function mapTmdb(results: TmdbShow[] | undefined): Show[] {
         r.origin_country?.includes("TR") && r.original_name ? r.original_name : r.name,
       year: r.first_air_date ? Number(r.first_air_date.slice(0, 4)) : 0,
       poster: `${TMDB_IMAGE_BASE}${r.poster_path}`,
+      rating: r.vote_average,
+      votes: r.vote_count,
     }));
 }
 
 function mapCurated(
-  items: { rank: number; tmdb_id: number; title: string; poster_path: string | null }[] | undefined,
+  items:
+    | {
+        rank: number;
+        tmdb_id: number;
+        title: string;
+        poster_path: string | null;
+        vote_average: number | null;
+        vote_count: number | null;
+      }[]
+    | undefined,
 ): Show[] {
   if (!items) return [];
   return items.map((i) => ({
@@ -43,6 +57,8 @@ function mapCurated(
     title: i.title,
     year: 0,
     poster: i.poster_path ? `${TMDB_IMAGE_BASE}${i.poster_path}` : "",
+    rating: i.vote_average ?? undefined,
+    votes: i.vote_count ?? undefined,
   }));
 }
 
@@ -74,30 +90,43 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 60,
   });
 
-  const popularQ = useQuery({
+  const popularQ = useInfiniteQuery({
     queryKey: ["tmdb", "popular", "tv", userLanguage],
-    queryFn: () =>
-      getTvShows({ data: { endpoint: "/tv/popular", language: userLanguage } }),
+    queryFn: ({ pageParam }) =>
+      getTvShows({
+        data: {
+          endpoint: "/tv/popular",
+          language: userLanguage,
+          params: { page: pageParam },
+        },
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (last: any, pages) =>
+      last?.total_pages && pages.length < Math.min(last.total_pages, 10)
+        ? pages.length + 1
+        : undefined,
     staleTime: 1000 * 60 * 30,
   });
 
   const turkishShows = mapCurated(turkishQ.data);
   const topRatedShows = mapCurated(topRatedQ.data);
-  const popularShows = mapTmdb(popularQ.data?.results);
+  const popularShows = mapTmdb(
+    popularQ.data?.pages.flatMap((p: any) => p?.results ?? []),
+  );
 
 
   return (
     <div className="pb-32">
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
-          <div className="flex flex-col">
+          <Link to="/series/curated/turkish_classics" className="flex flex-col">
             <span className="text-2xl font-extrabold text-[var(--classic)] leading-none">25</span>
             <span className="text-[11px] text-muted-foreground leading-tight mt-1">
               Turkish<br />Classics
             </span>
-          </div>
+          </Link>
           <h1 className="text-2xl font-bold tracking-tight pt-1">BingeBox</h1>
-          <div className="relative w-16 h-12">
+          <Link to="/series/curated/top_rated_100k" className="relative w-16 h-12 block">
             <div className="absolute inset-0 flex items-center justify-center">
               <Heart className="w-12 h-12 fill-[var(--heart)] text-[var(--heart)]" strokeWidth={0} />
             </div>
@@ -107,7 +136,7 @@ export function HomeScreen() {
             <span className="absolute top-1 -right-2 text-[var(--gold)] text-xs">★</span>
             <span className="absolute -bottom-1 right-1 text-[var(--gold)] text-[10px]">★</span>
             <span className="absolute -bottom-1 -left-1 text-[var(--gold)] text-[10px]">★</span>
-          </div>
+          </Link>
         </div>
 
         <nav className="mt-5 flex items-stretch justify-between gap-1 border-b border-border">
@@ -134,6 +163,7 @@ export function HomeScreen() {
           <PosterRow
             title="Top Rated Shows (100K+ Votes)"
             shows={topRatedShows}
+            showRating
             seeAllTo="/series/curated/top_rated_100k"
             accent={
               <span className="text-xs text-muted-foreground">
@@ -144,6 +174,7 @@ export function HomeScreen() {
           <PosterRow
             title="25 Essential Turkish Classics"
             shows={turkishShows}
+            showRating
             seeAllTo="/series/curated/turkish_classics"
             accent={
               <span className="text-xs text-[var(--classic)]">
@@ -155,7 +186,12 @@ export function HomeScreen() {
           <PosterRow
             title="Popular This Week"
             shows={popularShows}
+            showRating
             seeAllTo="/series/popular-this-week"
+            loadingMore={popularQ.isFetchingNextPage}
+            onReachEnd={() => {
+              if (popularQ.hasNextPage && !popularQ.isFetchingNextPage) popularQ.fetchNextPage();
+            }}
             accent={
               <span className="text-xs text-muted-foreground">
                 {popularQ.isLoading ? "Loading…" : popularQ.isError ? "Error" : ""}
