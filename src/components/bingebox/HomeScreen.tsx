@@ -62,12 +62,8 @@ export function HomeScreen() {
   const [top, setTop] = useState<Top>("series");
   const userLanguage = getUserLanguage();
 
-  const greatestQ = useQuery({
-    queryKey: ["tmdb", "trending", "tv", "week", userLanguage],
-    queryFn: () =>
-      getTvShows({ data: { endpoint: "/trending/tv/week", language: userLanguage } }),
-    staleTime: 1000 * 60 * 30,
-  });
+  const turkishQ = useQuery({
+
 
   const turkishQ = useQuery({
     queryKey: ["curated", "turkish_classics"],
