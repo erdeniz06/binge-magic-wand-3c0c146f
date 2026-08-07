@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getCuratedList } from "@/lib/curated.functions";
 import { CURATED_LISTS } from "@/lib/curated-lists";
 import { TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
@@ -89,7 +89,25 @@ function CuratedListPage() {
                     />
                   )}
                 </div>
-                <p className="flex-1 min-w-0 text-sm font-semibold truncate">{item.title}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{item.title}</p>
+                  {item.vote_average ? (
+                    <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
+                      <span className="font-semibold text-foreground">
+                        {item.vote_average.toFixed(1)}
+                      </span>
+                      {item.vote_count ? (
+                        <span>
+                          ({item.vote_count >= 1000
+                            ? `${Math.round(item.vote_count / 1000)}K`
+                            : item.vote_count}{" "}
+                          oy)
+                        </span>
+                      ) : null}
+                    </p>
+                  ) : null}
+                </div>
                 <span className="text-muted-foreground text-lg">›</span>
               </Link>
             </li>
