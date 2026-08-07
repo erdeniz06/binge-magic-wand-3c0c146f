@@ -82,7 +82,6 @@ export function HomeScreen() {
   });
 
   const turkishShows = mapCurated(turkishQ.data);
-  const turkishShows = mapCurated(turkishQ.data);
   const topRatedShows = mapCurated(topRatedQ.data);
   const popularShows = mapTmdb(popularQ.data?.results);
 
