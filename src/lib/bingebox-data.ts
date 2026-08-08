@@ -133,7 +133,7 @@ export const myLists: ShowList[] = [
 
 export const curatedLists: ShowList[] = [
   { id: "c1", title: "100 Greatest Shows", count: 100, cover: poster("list-100"), author: "BingeBox" },
-  { id: "c2", title: "25 Essential Turkish Classics", count: 25, cover: poster("list-25tr"), author: "BingeBox" },
+  { id: "c2", title: "Top 20 Turkish Series (IMDb)", count: 20, cover: poster("list-25tr"), author: "BingeBox" },
   { id: "c3", title: "Korean Wave", count: 30, cover: poster("list-kw"), author: "Deniz" },
   { id: "c4", title: "BingeBox Top 250 Series", count: 250, cover: poster("list-250"), author: "BingeBox" },
 ];
