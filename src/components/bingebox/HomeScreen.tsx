@@ -120,7 +120,7 @@ export function HomeScreen() {
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
           <Link to="/series/curated/turkish_classics" className="flex flex-col">
-            <span className="text-2xl font-extrabold text-[var(--classic)] leading-none">25</span>
+            <span className="text-2xl font-extrabold text-[var(--classic)] leading-none">20</span>
             <span className="text-[11px] text-muted-foreground leading-tight mt-1">
               Turkish<br />Classics
             </span>
@@ -172,7 +172,7 @@ export function HomeScreen() {
             }
           />
           <PosterRow
-            title="25 Essential Turkish Classics"
+            title="Top 20 Turkish Series (IMDb)"
             shows={turkishShows}
             showRating
             seeAllTo="/series/curated/turkish_classics"

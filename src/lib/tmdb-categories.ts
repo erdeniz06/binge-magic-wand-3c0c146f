@@ -14,7 +14,7 @@ export const TMDB_CATEGORIES: Record<string, TmdbCategory> = {
   },
   "turkish-classics": {
     slug: "turkish-classics",
-    title: "25 Essential Turkish Classics",
+    title: "Top 20 Turkish Series (IMDb)",
     endpoint: "/discover/tv",
     params: {
       with_origin_country: "TR",
