@@ -166,9 +166,11 @@ export function HomeScreen() {
             showRating
             seeAllTo="/series/curated/top_rated_100k"
             accent={
-              <span className="text-xs text-muted-foreground">
-                {topRatedQ.isLoading ? "Loading…" : topRatedQ.isError ? "Error" : "Curated"}
-              </span>
+              topRatedQ.isLoading ? (
+                <span className="text-xs text-muted-foreground">Loading…</span>
+              ) : topRatedQ.isError ? (
+                <span className="text-xs text-destructive">Error</span>
+              ) : null
             }
           />
           <PosterRow
