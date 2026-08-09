@@ -4,6 +4,8 @@ import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getCuratedList } from "@/lib/curated.functions";
 import { CURATED_LISTS } from "@/lib/curated-lists";
 import { TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { formatVotes } from "@/lib/format";
+
 
 export const Route = createFileRoute("/_authenticated/series/curated/$list")({
   beforeLoad: ({ params }) => {
