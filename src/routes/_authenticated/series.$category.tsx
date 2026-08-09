@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { getImdbRatings } from "@/lib/imdb.functions";
+import { formatVotes } from "@/lib/format";
 import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
 
 function getUserLanguage() {
@@ -83,8 +85,20 @@ function CategoryPage() {
     return () => io.disconnect();
   }, [query]);
 
-  const items: TmdbItem[] =
-    query.data?.pages.flatMap((p) => (p.results ?? []) as TmdbItem[]) ?? [];
+  const imdbQ = useQuery({
+    queryKey: ["imdb", "ratings"],
+    queryFn: () => getImdbRatings(),
+    staleTime: 1000 * 60 * 60 * 12,
+  });
+  const imdbMap = new Map((imdbQ.data ?? []).map((r) => [r.tmdb_id, r]));
+
+  const items: TmdbItem[] = (
+    query.data?.pages.flatMap((p) => (p.results ?? []) as TmdbItem[]) ?? []
+  ).map((it) => {
+    const hit = imdbMap.get(it.id);
+    return hit ? { ...it, vote_average: hit.rating, vote_count: hit.votes } : it;
+  });
+
 
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
@@ -128,7 +142,7 @@ function CategoryPage() {
                     <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
                     {item.vote_average?.toFixed(1) ?? "—"}
                   </span>
-                  <span>· {item.vote_count.toLocaleString()} oy</span>
+                  <span>· {formatVotes(item.vote_count)} oy</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
                   {item.overview || "Açıklama yok."}

@@ -10,6 +10,7 @@ import { NewsScreen } from "./NewsScreen";
 import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { getCuratedList } from "@/lib/curated.functions";
+import { getImdbRatings } from "@/lib/imdb.functions";
 import { cn } from "@/lib/utils";
 
 type TmdbShow = {
@@ -108,10 +109,23 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 30,
   });
 
+  const imdbQ = useQuery({
+    queryKey: ["imdb", "ratings"],
+    queryFn: () => getImdbRatings(),
+    staleTime: 1000 * 60 * 60 * 12,
+  });
+
+  const imdbMap = new Map((imdbQ.data ?? []).map((r) => [r.tmdb_id, r]));
+  const withImdb = (shows: Show[]): Show[] =>
+    shows.map((s) => {
+      const hit = imdbMap.get(Number(s.id));
+      return hit ? { ...s, rating: hit.rating, votes: hit.votes } : s;
+    });
+
   const turkishShows = mapCurated(turkishQ.data);
   const topRatedShows = mapCurated(topRatedQ.data);
-  const popularShows = mapTmdb(
-    popularQ.data?.pages.flatMap((p: any) => p?.results ?? []),
+  const popularShows = withImdb(
+    mapTmdb(popularQ.data?.pages.flatMap((p: any) => p?.results ?? [])),
   );
 
 
