@@ -74,6 +74,36 @@ export type Database = {
         }
         Relationships: []
       }
+      imdb_ratings: {
+        Row: {
+          created_at: string
+          imdb_id: string
+          rating: number
+          title: string
+          tmdb_id: number
+          updated_at: string
+          votes: number
+        }
+        Insert: {
+          created_at?: string
+          imdb_id: string
+          rating: number
+          title: string
+          tmdb_id: number
+          updated_at?: string
+          votes?: number
+        }
+        Update: {
+          created_at?: string
+          imdb_id?: string
+          rating?: number
+          title?: string
+          tmdb_id?: number
+          updated_at?: string
+          votes?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           country: string | null
