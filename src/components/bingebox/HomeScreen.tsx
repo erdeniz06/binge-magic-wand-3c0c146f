@@ -10,6 +10,7 @@ import { NewsScreen } from "./NewsScreen";
 import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { getCuratedList } from "@/lib/curated.functions";
+import { getImdbRatings } from "@/lib/imdb.functions";
 import { cn } from "@/lib/utils";
 
 type TmdbShow = {
