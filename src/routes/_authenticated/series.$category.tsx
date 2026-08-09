@@ -85,8 +85,20 @@ function CategoryPage() {
     return () => io.disconnect();
   }, [query]);
 
-  const items: TmdbItem[] =
-    query.data?.pages.flatMap((p) => (p.results ?? []) as TmdbItem[]) ?? [];
+  const imdbQ = useQuery({
+    queryKey: ["imdb", "ratings"],
+    queryFn: () => getImdbRatings(),
+    staleTime: 1000 * 60 * 60 * 12,
+  });
+  const imdbMap = new Map((imdbQ.data ?? []).map((r) => [r.tmdb_id, r]));
+
+  const items: TmdbItem[] = (
+    query.data?.pages.flatMap((p) => (p.results ?? []) as TmdbItem[]) ?? []
+  ).map((it) => {
+    const hit = imdbMap.get(it.id);
+    return hit ? { ...it, vote_average: hit.rating, vote_count: hit.votes } : it;
+  });
+
 
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
