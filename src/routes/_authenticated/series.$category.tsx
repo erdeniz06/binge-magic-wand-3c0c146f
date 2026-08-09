@@ -142,7 +142,7 @@ function CategoryPage() {
                     <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
                     {item.vote_average?.toFixed(1) ?? "—"}
                   </span>
-                  <span>· {item.vote_count.toLocaleString()} oy</span>
+                  <span>· {formatVotes(item.vote_count)} oy</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
                   {item.overview || "Açıklama yok."}
