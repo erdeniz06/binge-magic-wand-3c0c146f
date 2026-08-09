@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { getImdbRatings } from "@/lib/imdb.functions";
+import { formatVotes } from "@/lib/format";
 import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
 
 function getUserLanguage() {
