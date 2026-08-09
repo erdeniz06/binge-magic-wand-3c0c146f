@@ -98,13 +98,9 @@ function CuratedListPage() {
                         {item.vote_average.toFixed(1)}
                       </span>
                       {item.vote_count ? (
-                        <span>
-                          ({item.vote_count >= 1000
-                            ? `${Math.round(item.vote_count / 1000)}K`
-                            : item.vote_count}{" "}
-                          oy)
-                        </span>
+                        <span>({formatVotes(item.vote_count)} oy)</span>
                       ) : null}
+
                     </p>
                   ) : null}
                 </div>
