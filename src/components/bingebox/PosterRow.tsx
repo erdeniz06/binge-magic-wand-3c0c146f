@@ -2,12 +2,8 @@ import { useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import type { Show } from "@/lib/bingebox-data";
+import { formatVotes } from "@/lib/format";
 
-function formatVotes(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1000)}K`;
-  return String(n);
-}
 
 export function PosterRow({
   title,

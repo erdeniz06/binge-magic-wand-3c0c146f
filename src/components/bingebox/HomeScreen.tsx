@@ -119,14 +119,14 @@ export function HomeScreen() {
     <div className="pb-32">
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
-          <Link to="/series/curated/turkish_classics" className="flex flex-col">
+          <Link to="/series/curated/$list" params={{ list: "turkish_classics" }} className="flex flex-col">
             <span className="text-2xl font-extrabold text-[var(--classic)] leading-none">20</span>
             <span className="text-[11px] text-muted-foreground leading-tight mt-1">
               Turkish<br />Classics
             </span>
           </Link>
           <h1 className="text-2xl font-bold tracking-tight pt-1">BingeBox</h1>
-          <Link to="/series/curated/top_rated_100k" className="relative w-16 h-12 block">
+          <Link to="/series/curated/$list" params={{ list: "top_rated_100k" }} className="relative w-16 h-12 block">
             <div className="absolute inset-0 flex items-center justify-center">
               <Heart className="w-12 h-12 fill-[var(--heart)] text-[var(--heart)]" strokeWidth={0} />
             </div>
