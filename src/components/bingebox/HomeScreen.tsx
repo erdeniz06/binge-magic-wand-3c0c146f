@@ -119,7 +119,7 @@ export function HomeScreen() {
     <div className="pb-32">
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
-          <Link to="/series/curated/turkish_classics" className="flex flex-col">
+          <Link to="/series/curated/$list" params={{ list: "turkish_classics" }} className="flex flex-col">
             <span className="text-2xl font-extrabold text-[var(--classic)] leading-none">20</span>
             <span className="text-[11px] text-muted-foreground leading-tight mt-1">
               Turkish<br />Classics
