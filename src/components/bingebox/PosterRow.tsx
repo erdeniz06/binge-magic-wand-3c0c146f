@@ -3,6 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import type { Show } from "@/lib/bingebox-data";
 import { formatVotes } from "@/lib/format";
+import { useUserShowMap } from "@/lib/user-shows";
+import { useWatchProviders, PROVIDER_LOGO_BASE } from "@/lib/use-watch-providers";
+import type { ProviderInfo } from "@/lib/watch-providers.functions";
+import { WatchProgress } from "./WatchProgress";
 
 
 export function PosterRow({
@@ -23,6 +27,7 @@ export function PosterRow({
   loadingMore?: boolean;
 }) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const providersQ = useWatchProviders(shows.map((s) => Number(s.id)).filter(Boolean));
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -55,7 +60,13 @@ export function PosterRow({
       </div>
       <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory">
         {shows.map((s, i) => (
-          <PosterCard key={`${s.id}-${i}`} show={s} rank={showRating ? i + 1 : undefined} showRating={showRating} />
+          <PosterCard
+            key={`${s.id}-${i}`}
+            show={s}
+            rank={showRating ? i + 1 : undefined}
+            showRating={showRating}
+            provider={providersQ.data?.[s.id]}
+          />
         ))}
         {(onReachEnd || seeAllTo) && (
           <div ref={sentinelRef} className="shrink-0 w-32 flex items-center justify-center">
@@ -76,16 +87,38 @@ export function PosterRow({
   );
 }
 
+export function ProviderBadge({ provider }: { provider: ProviderInfo }) {
+  if (!provider.logo_path) return null;
+  return (
+    <span
+      title={`${provider.provider_name}'te izle`}
+      className="absolute top-1 right-1 w-[22px] h-[22px] rounded-md overflow-hidden ring-1 ring-border bg-background/80 backdrop-blur"
+    >
+      <img
+        src={`${PROVIDER_LOGO_BASE}${provider.logo_path}`}
+        alt={provider.provider_name}
+        loading="lazy"
+        className="w-full h-full object-cover"
+      />
+    </span>
+  );
+}
+
 export function PosterCard({
   show,
   rank,
   showRating,
+  provider,
 }: {
   show: Show;
   rank?: number;
   showRating?: boolean;
+  provider?: ProviderInfo;
 }) {
   const isNumeric = /^\d+$/.test(show.id);
+  const { map } = useUserShowMap();
+  const tracked = isNumeric ? map.get(Number(show.id)) : undefined;
+
   const content = (
     <>
       <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-card ring-1 ring-border">
@@ -95,6 +128,7 @@ export function PosterCard({
             #{rank}
           </span>
         ) : null}
+        {provider ? <ProviderBadge provider={provider} /> : null}
       </div>
       <p className="mt-2 text-xs font-medium truncate">{show.title}</p>
       {showRating && show.rating ? (
@@ -105,6 +139,19 @@ export function PosterCard({
         </p>
       ) : show.year ? (
         <p className="text-[11px] text-muted-foreground">{show.year}</p>
+      ) : null}
+      {tracked ? (
+        <WatchProgress
+          status={tracked.status}
+          episodesWatched={tracked.episodes_watched}
+          totalEpisodes={tracked.total_episodes}
+          compact
+        />
+      ) : null}
+      {provider ? (
+        <p className="mt-1 text-[10px] text-muted-foreground truncate">
+          {provider.provider_name}'te izle
+        </p>
       ) : null}
     </>
   );
