@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { ShowTracking } from "@/components/bingebox/ShowTracking";
+
 
 function getUserLanguage() {
   if (typeof navigator === "undefined") return "en-US";
@@ -192,6 +194,19 @@ function SeriesDetailPage() {
               </span>
             ))}
           </div>
+
+
+          <ShowTracking
+            meta={{
+              tmdb_id: detail.id,
+              title: detail.name,
+              poster_path: detail.poster_path,
+              total_episodes: detail.number_of_episodes ?? null,
+              episode_runtime: (detail as { episode_run_time?: number[] }).episode_run_time?.[0] ?? null,
+            }}
+            seasonCount={detail.number_of_seasons ?? 0}
+          />
+
 
           {detail.overview && (
             <section className="px-4 mt-4">

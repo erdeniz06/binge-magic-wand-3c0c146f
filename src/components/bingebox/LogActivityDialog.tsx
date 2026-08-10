@@ -1,100 +1,109 @@
 import { useMemo, useState } from "react";
-import { Check, ChevronDown, ChevronLeft, Clock, Search } from "lucide-react";
+import { Bell, BellOff, ChevronLeft, Loader2, Search, Star } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import {
-  popularThisWeek,
-  friendsWatching,
-  greatest100,
-  essentialClassicsTR,
-  genres,
-  decades,
-  languages,
-  countries,
-} from "@/lib/bingebox-data";
+  logEpisode,
+  logSeason,
+  logWholeShow,
+  rateShow,
+  setWatchlist,
+  useInvalidateUserShows,
+  type ShowMeta,
+} from "@/lib/user-shows";
 
-type LogMode = "episode" | "season" | "show";
+type LogMode = "episode" | "season" | "show" | "watchlist";
 
 const options: { mode: LogMode; title: string; desc: string }[] = [
   { mode: "episode", title: "Log Episode", desc: "Mark an episode as completed" },
   { mode: "season", title: "Log Season", desc: "Mark an entire season as completed" },
   { mode: "show", title: "Log Show", desc: "Mark an entire show as completed" },
+  { mode: "watchlist", title: "Add to Watchlist", desc: "Save a show for later" },
 ];
 
-// Aggregate all shows and enrich with seasons metadata for the log flow.
-const seasonsMap: Record<string, number[]> = {
-  "breaking-bad": [7, 13, 13, 13, 16],
-  severance: [9, 10],
-  bear: [8, 10, 10],
-  shogun: [10],
-  from: [10, 10],
-  "off-campus": [8],
-  "law-svu": [22, 22, 22],
-  recruit: [8, 6],
-  daredevil: [9],
-  from2: [10],
-  sopranos: [13, 13, 13, 13, 13, 21],
-  wire: [13, 12, 12, 13, 10],
-  got: [10, 10, 10, 10, 10, 10, 7, 6],
-  chernobyl: [5],
-  succession: [10, 10, 9, 10],
-  kurtlar: [20, 34, 29, 14],
-  behzat: [38, 40, 17, 9],
-  leyla: [23, 45, 17],
-  asmali: [37, 33],
-  ezel: [26, 45, 20],
+type SearchResult = {
+  id: number;
+  name: string;
+  original_name?: string;
+  origin_country?: string[];
+  poster_path: string | null;
+  first_air_date?: string;
 };
 
-const allShows = [
-  ...greatest100,
-  ...essentialClassicsTR,
-  ...popularThisWeek,
-  ...friendsWatching,
-].map((s) => ({ ...s, seasons: seasonsMap[s.id] ?? [10] }));
+type TvDetail = {
+  id: number;
+  name: string;
+  poster_path: string | null;
+  number_of_episodes: number;
+  episode_run_time?: number[];
+  seasons: { season_number: number; episode_count: number; name: string }[];
+};
 
-// Deduplicate by id
-const shows = Array.from(new Map(allShows.map((s) => [s.id, s])).values());
-
-const recentSearches = ["Squid Game", "Severance", "The Bear", "Shōgun"];
-
-function Chip({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) {
-  return (
-    <button className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card hover:bg-accent transition px-3.5 py-1.5 text-xs font-medium">
-      {icon}
-      {children}
-    </button>
-  );
+function getUserLanguage() {
+  if (typeof navigator === "undefined") return "en-US";
+  const lang = navigator.language || "en-US";
+  return lang.length === 2 ? `${lang}-${lang.toUpperCase()}` : lang;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <div className="flex flex-wrap gap-2">{children}</div>
-    </div>
-  );
-}
-
-export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function LogActivityDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const language = getUserLanguage();
   const [mode, setMode] = useState<LogMode | null>(null);
   const [query, setQuery] = useState("");
-  const [showId, setShowId] = useState<string | null>(null);
-  const [season, setSeason] = useState(1);
+  const [showId, setShowId] = useState<number | null>(null);
+  const [season, setSeason] = useState<number | null>(null);
+  const [rating, setRating] = useState<number | null>(null);
+  const [notify, setNotify] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const invalidate = useInvalidateUserShows();
 
-  const selectedShow = shows.find((s) => s.id === showId) ?? null;
-  const filteredShows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return shows.filter((s) => s.title.toLowerCase().includes(q));
-  }, [query]);
+  const searchQ = useQuery({
+    queryKey: ["tmdb", "search", query, language],
+    queryFn: () =>
+      getTvShows({
+        data: { endpoint: "/search/tv", language, params: { query } },
+      }) as Promise<{ results: SearchResult[] }>,
+    enabled: open && query.trim().length > 1,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const detailQ = useQuery({
+    queryKey: ["tmdb", "tv", showId, language],
+    queryFn: () =>
+      getTvShows({
+        data: { endpoint: `/tv/${showId}`, language },
+      }) as Promise<unknown> as Promise<TvDetail>,
+    enabled: open && showId != null,
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const detail = detailQ.data;
+  const seasons = useMemo(
+    () => (detail?.seasons ?? []).filter((s) => s.season_number > 0 && s.episode_count > 0),
+    [detail],
+  );
+  const episodeCountBySeason = useMemo(() => {
+    const m: Record<number, number> = {};
+    for (const s of seasons) m[s.season_number] = s.episode_count;
+    return m;
+  }, [seasons]);
 
   const reset = () => {
     setMode(null);
     setQuery("");
     setShowId(null);
-    setSeason(1);
+    setSeason(null);
+    setRating(null);
+    setNotify(false);
   };
 
   const close = (next: boolean) => {
@@ -102,10 +111,50 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
     if (!next) reset();
   };
 
-  const complete = (label: string) => {
-    toast.success(`${label} logged`);
-    close(false);
+  const meta: ShowMeta | null = detail
+    ? {
+        tmdb_id: detail.id,
+        title: detail.name,
+        poster_path: detail.poster_path,
+        total_episodes: detail.number_of_episodes ?? null,
+        episode_runtime: detail.episode_run_time?.[0] ?? null,
+      }
+    : null;
+
+  const submit = async () => {
+    if (!meta || !mode) return;
+    setSaving(true);
+    try {
+      if (mode === "watchlist") {
+        await setWatchlist(meta, notify);
+        toast.success(
+          notify ? `${meta.title} watchlist'e eklendi, takip açık` : `${meta.title} watchlist'e eklendi`,
+        );
+      } else if (mode === "show") {
+        if (rating != null) await rateShow(meta, rating);
+        else await logWholeShow(meta, seasons.length);
+        toast.success(`${meta.title} izlendi olarak işaretlendi`);
+      } else if (mode === "season") {
+        if (season == null) {
+          toast.error("Bir sezon seç");
+          return;
+        }
+        await logSeason(meta, season, episodeCountBySeason);
+        toast.success(`${meta.title} S${season} izlendi`);
+      } else {
+        await logEpisode(meta, 1);
+        toast.success(`${meta.title} · 1 bölüm eklendi`);
+      }
+      invalidate();
+      close(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Kaydedilemedi");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const results = searchQ.data?.results?.filter((r) => r.poster_path) ?? [];
 
   return (
     <Dialog open={open} onOpenChange={close}>
@@ -115,9 +164,10 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
             {mode && (
               <button
                 onClick={() => {
-                  if (selectedShow) {
+                  if (showId) {
                     setShowId(null);
-                    setSeason(1);
+                    setSeason(null);
+                    setRating(null);
                   } else {
                     setMode(null);
                     setQuery("");
@@ -129,7 +179,9 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
-            <DialogTitle>{mode ? options.find((o) => o.mode === mode)?.title : "Log Activity"}</DialogTitle>
+            <DialogTitle>
+              {mode ? options.find((o) => o.mode === mode)?.title : "Log Activity"}
+            </DialogTitle>
           </div>
         </DialogHeader>
 
@@ -149,79 +201,56 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
             </div>
           )}
 
-          {mode && !selectedShow && (
-            <div className="space-y-7 pt-4">
+          {mode && showId == null && (
+            <div className="space-y-4 pt-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search series, actors, directors..."
+                  placeholder="Dizi ara…"
                   className="pl-10 h-11 rounded-full bg-card border-border"
                   autoFocus
                 />
               </div>
 
-              {query.trim() === "" ? (
-                <>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                    {recentSearches.map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setQuery(s)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card hover:bg-accent transition px-3.5 py-1.5 text-xs font-medium whitespace-nowrap"
-                      >
-                        <Clock className="w-3 h-3" />
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-
-                  <p className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Browse by</p>
-
-                  <Section title="Genre">
-                    {genres.slice(0, 9).map((g) => <Chip key={g}>{g}</Chip>)}
-                    <Chip icon={<span className="text-base leading-none">+</span>}>More</Chip>
-                  </Section>
-
-                  <Section title="Decade">
-                    {decades.map((d) => <Chip key={d}>{d}</Chip>)}
-                  </Section>
-
-                  <Section title="Language">
-                    {languages.map((l) => <Chip key={l}>{l}</Chip>)}
-                    <Chip icon={<ChevronDown className="w-3 h-3" />}>Other</Chip>
-                  </Section>
-
-                  <Section title="Country">
-                    {countries.map((c) => <Chip key={c}>{c}</Chip>)}
-                  </Section>
-
-                  <Section title="Rating">
-                    {["9+", "8+", "7+", "Award Winners"].map((r) => <Chip key={r}>{r}</Chip>)}
-                  </Section>
-                </>
+              {query.trim().length < 2 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Aramak için en az 2 harf yaz.
+                </p>
+              ) : searchQ.isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : results.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  "{query}" için sonuç yok
+                </p>
               ) : (
                 <div className="space-y-2">
-                  {filteredShows.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                      No results for "{query}"
-                    </p>
-                  )}
-                  {filteredShows.map((show) => (
+                  {results.map((r) => (
                     <button
-                      key={show.id}
+                      key={r.id}
                       onClick={() => {
-                        setShowId(show.id);
-                        setSeason(1);
+                        setShowId(r.id);
+                        setSeason(null);
                       }}
                       className="w-full flex items-center gap-3 text-left rounded-xl bg-card border border-border hover:bg-accent transition p-2.5"
                     >
-                      <img src={show.poster} alt={`${show.title} poster`} className="w-12 h-16 rounded-md object-cover" />
+                      <img
+                        src={`${TMDB_IMAGE_BASE}${r.poster_path}`}
+                        alt={r.name}
+                        loading="lazy"
+                        className="w-12 h-16 rounded-md object-cover"
+                      />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">{show.title}</p>
+                        <p className="text-sm font-semibold truncate">
+                          {r.origin_country?.includes("TR") && r.original_name
+                            ? r.original_name
+                            : r.name}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          {show.year} · {show.seasons.length} seasons
+                          {r.first_air_date?.slice(0, 4) || "—"}
                         </p>
                       </div>
                     </button>
@@ -231,77 +260,120 @@ export function LogActivityDialog({ open, onOpenChange }: { open: boolean; onOpe
             </div>
           )}
 
-          {mode && selectedShow && (
+          {mode && showId != null && (
             <div className="space-y-5 pt-4">
-              <div className="flex items-center gap-3">
-                <img src={selectedShow.poster} alt={`${selectedShow.title} poster`} className="w-14 h-20 rounded-lg object-cover" />
-                <div>
-                  <p className="font-semibold leading-tight">{selectedShow.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{selectedShow.year} · choose what you completed</p>
+              {detailQ.isLoading || !detail ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    {detail.poster_path && (
+                      <img
+                        src={`${TMDB_IMAGE_BASE}${detail.poster_path}`}
+                        alt={detail.name}
+                        className="w-14 h-20 rounded-lg object-cover"
+                      />
+                    )}
+                    <div>
+                      <p className="font-semibold leading-tight">{detail.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {seasons.length} sezon · {detail.number_of_episodes} bölüm
+                      </p>
+                    </div>
+                  </div>
 
-              {mode !== "show" && (
-                <div className="space-y-2">
-                  <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">Season</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {selectedShow.seasons.map((_, index) => {
-                      const value = index + 1;
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => setSeason(value)}
+                  {(mode === "season" || mode === "episode") && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
+                        Sezon
+                      </p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {seasons.map((s) => (
+                          <button
+                            key={s.season_number}
+                            onClick={() => setSeason(s.season_number)}
+                            className={cn(
+                              "h-10 rounded-lg border text-sm transition",
+                              season === s.season_number
+                                ? "bg-foreground text-background border-foreground"
+                                : "bg-card border-border hover:bg-accent",
+                            )}
+                          >
+                            S{s.season_number}
+                          </button>
+                        ))}
+                      </div>
+                      {season != null && (
+                        <p className="text-xs text-muted-foreground">
+                          S{season} · {episodeCountBySeason[season]} bölüm
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {mode === "show" && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
+                        Puanın (opsiyonel)
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => setRating(rating === n ? null : n)}
+                            className={cn(
+                              "w-9 h-9 rounded-lg border text-xs font-semibold transition flex items-center justify-center",
+                              rating === n
+                                ? "bg-foreground text-background border-foreground"
+                                : "bg-card border-border hover:bg-accent",
+                            )}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        <Star className="w-3 h-3" />
+                        Puan verirsen dizi %100 izlendi sayılır.
+                      </p>
+                    </div>
+                  )}
+
+                  {mode === "watchlist" && (
+                    <button
+                      onClick={() => setNotify(!notify)}
+                      className="w-full flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3"
+                    >
+                      <span className="flex items-center gap-2 text-sm">
+                        {notify ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                        🔔 Bu diziyi takip et
+                      </span>
+                      <span
+                        className={cn(
+                          "relative w-10 h-6 rounded-full transition",
+                          notify ? "bg-foreground" : "bg-muted",
+                        )}
+                      >
+                        <span
                           className={cn(
-                            "h-10 rounded-lg border text-sm transition",
-                            season === value ? "bg-foreground text-background border-foreground" : "bg-card border-border hover:bg-accent",
+                            "absolute top-0.5 w-5 h-5 rounded-full bg-background transition-all",
+                            notify ? "left-[18px]" : "left-0.5",
                           )}
-                        >
-                          S{value}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                        />
+                      </span>
+                    </button>
+                  )}
 
-              {mode === "episode" && (
-                <div className="space-y-2">
-                  <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">Episode</p>
-                  <div className="grid grid-cols-5 gap-2">
-                    {Array.from({ length: selectedShow.seasons[season - 1] }, (_, index) => {
-                      const episode = index + 1;
-                      return (
-                        <button
-                          key={episode}
-                          onClick={() => complete(`${selectedShow.title} S${season} E${episode}`)}
-                          className="h-10 rounded-lg bg-card border border-border hover:bg-accent transition text-sm"
-                        >
-                          E{episode}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {mode === "season" && (
-                <button
-                  onClick={() => complete(`${selectedShow.title} Season ${season}`)}
-                  className="w-full h-12 rounded-xl bg-foreground text-background font-semibold flex items-center justify-center gap-2 active:scale-[0.99] transition"
-                >
-                  <Check className="w-4 h-4" />
-                  Mark Season {season} Completed
-                </button>
-              )}
-
-              {mode === "show" && (
-                <button
-                  onClick={() => complete(selectedShow.title)}
-                  className="w-full h-12 rounded-xl bg-foreground text-background font-semibold flex items-center justify-center gap-2 active:scale-[0.99] transition"
-                >
-                  <Check className="w-4 h-4" />
-                  Mark Entire Show Completed
-                </button>
+                  <button
+                    onClick={submit}
+                    disabled={saving || (mode === "season" && season == null)}
+                    className="w-full rounded-full bg-foreground text-background py-3 text-sm font-semibold disabled:opacity-50"
+                  >
+                    {saving ? "Kaydediliyor…" : "Kaydet"}
+                  </button>
+                </>
               )}
             </div>
           )}

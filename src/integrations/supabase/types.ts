@@ -162,8 +162,10 @@ export type Database = {
           episode_runtime: number | null
           episodes_watched: number
           id: string
+          notify: boolean
           poster_path: string | null
           rating: number | null
+          seasons_logged: number[]
           status: string
           title: string
           tmdb_id: number
@@ -177,8 +179,10 @@ export type Database = {
           episode_runtime?: number | null
           episodes_watched?: number
           id?: string
+          notify?: boolean
           poster_path?: string | null
           rating?: number | null
+          seasons_logged?: number[]
           status?: string
           title: string
           tmdb_id: number
@@ -192,8 +196,10 @@ export type Database = {
           episode_runtime?: number | null
           episodes_watched?: number
           id?: string
+          notify?: boolean
           poster_path?: string | null
           rating?: number | null
+          seasons_logged?: number[]
           status?: string
           title?: string
           tmdb_id?: number
