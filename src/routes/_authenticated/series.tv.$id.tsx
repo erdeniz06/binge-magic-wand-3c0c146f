@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { ShowTracking } from "@/components/bingebox/ShowTracking";
+
 
 function getUserLanguage() {
   if (typeof navigator === "undefined") return "en-US";
