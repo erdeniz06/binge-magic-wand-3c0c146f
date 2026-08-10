@@ -155,6 +155,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_shows: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          episode_runtime: number | null
+          episodes_watched: number
+          id: string
+          poster_path: string | null
+          rating: number | null
+          status: string
+          title: string
+          tmdb_id: number
+          total_episodes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          episode_runtime?: number | null
+          episodes_watched?: number
+          id?: string
+          poster_path?: string | null
+          rating?: number | null
+          status?: string
+          title: string
+          tmdb_id: number
+          total_episodes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          episode_runtime?: number | null
+          episodes_watched?: number
+          id?: string
+          poster_path?: string | null
+          rating?: number | null
+          status?: string
+          title?: string
+          tmdb_id?: number
+          total_episodes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
