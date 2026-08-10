@@ -191,6 +191,8 @@ function SeriesDetailPage() {
                 {g.name}
               </span>
             ))}
+          </div>
+
 
           <ShowTracking
             meta={{
