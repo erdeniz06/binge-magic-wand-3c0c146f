@@ -10,8 +10,9 @@ export type NewsItem = {
 };
 
 const FEEDS = [
-  { url: "https://tvline.com/feed/", source: "TVLine" },
+  { url: "https://www.tvline.com/feed/", source: "TVLine" },
 ];
+
 
 function pick(block: string, tag: string) {
   const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"));
