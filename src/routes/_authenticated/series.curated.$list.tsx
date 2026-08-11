@@ -109,7 +109,13 @@ function CuratedListPage() {
 
                     </p>
                   ) : null}
+                  {item.network ? (
+                    <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                      {item.network}
+                    </p>
+                  ) : null}
                 </div>
+
                 {providersQ.data?.[String(item.tmdb_id)] ? (
                   <ProviderBadge provider={providersQ.data[String(item.tmdb_id)]!} size={26} />
                 ) : null}
