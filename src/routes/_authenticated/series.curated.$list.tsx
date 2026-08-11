@@ -5,6 +5,8 @@ import { getCuratedList } from "@/lib/curated.functions";
 import { CURATED_LISTS } from "@/lib/curated-lists";
 import { TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { formatVotes } from "@/lib/format";
+import { useWatchProviders } from "@/lib/use-watch-providers";
+import { ProviderBadge } from "@/components/bingebox/PosterRow";
 
 
 export const Route = createFileRoute("/_authenticated/series/curated/$list")({
@@ -51,6 +53,8 @@ function CuratedListPage() {
     queryFn: () => getCuratedList({ data: { listName: list } }),
     staleTime: 1000 * 60 * 60,
   });
+
+  const providersQ = useWatchProviders((q.data ?? []).map((i) => i.tmdb_id));
 
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
@@ -106,6 +110,9 @@ function CuratedListPage() {
                     </p>
                   ) : null}
                 </div>
+                {providersQ.data?.[String(item.tmdb_id)] ? (
+                  <ProviderBadge provider={providersQ.data[String(item.tmdb_id)]!} size={26} />
+                ) : null}
                 <span className="text-muted-foreground text-lg">›</span>
               </Link>
             </li>
