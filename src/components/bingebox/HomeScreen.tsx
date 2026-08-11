@@ -134,6 +134,8 @@ export function HomeScreen() {
 
   const turkishShows = mapCurated(turkishQ.data);
   const topRatedShows = mapCurated(topRatedQ.data);
+  const top250Shows = mapCurated(top250Q.data);
+
   const popularShows = withImdb(
     mapTmdb(popularQ.data?.pages.flatMap((p: any) => p?.results ?? [])),
   );
