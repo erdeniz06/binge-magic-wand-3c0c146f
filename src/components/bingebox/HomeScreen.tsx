@@ -49,6 +49,7 @@ function mapCurated(
         poster_path: string | null;
         vote_average: number | null;
         vote_count: number | null;
+        network?: string | null;
       }[]
     | undefined,
 ): Show[] {
@@ -60,8 +61,10 @@ function mapCurated(
     poster: i.poster_path ? `${TMDB_IMAGE_BASE}${i.poster_path}` : "",
     rating: i.vote_average ?? undefined,
     votes: i.vote_count ?? undefined,
+    network: i.network ?? undefined,
   }));
 }
+
 
 
 
