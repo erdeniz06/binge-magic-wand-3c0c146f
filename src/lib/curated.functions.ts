@@ -34,7 +34,7 @@ export const getCuratedList = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await supabasePublic
       .from("curated_lists")
-      .select("rank, tmdb_id, title, poster_path, vote_average, vote_count")
+      .select("rank, tmdb_id, title, poster_path, vote_average, vote_count, network")
       .eq("list_name", data.listName)
       .order("rank", { ascending: true });
 
