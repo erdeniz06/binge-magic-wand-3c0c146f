@@ -136,18 +136,22 @@ export function PosterCard({
             #{rank}
           </span>
         ) : null}
-        {provider ? <ProviderBadge provider={provider} /> : null}
       </div>
-      <p className="mt-2 text-xs font-medium truncate">{show.title}</p>
-      {showRating && show.rating ? (
-        <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
-          <span className="font-semibold text-foreground">{show.rating.toFixed(1)}</span>
-          {show.votes ? <span>({formatVotes(show.votes)})</span> : null}
-        </p>
-      ) : show.year ? (
-        <p className="text-[11px] text-muted-foreground">{show.year}</p>
-      ) : null}
+      <div className="mt-2 flex items-start gap-1.5">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium truncate">{show.title}</p>
+          {showRating && show.rating ? (
+            <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
+              <span className="font-semibold text-foreground">{show.rating.toFixed(1)}</span>
+              {show.votes ? <span>({formatVotes(show.votes)})</span> : null}
+            </p>
+          ) : show.year ? (
+            <p className="text-[11px] text-muted-foreground">{show.year}</p>
+          ) : null}
+        </div>
+        {provider ? <ProviderBadge provider={provider} size={24} /> : null}
+      </div>
       {tracked ? (
         <WatchProgress
           status={tracked.status}
@@ -156,11 +160,7 @@ export function PosterCard({
           compact
         />
       ) : null}
-      {provider ? (
-        <p className="mt-1 text-[10px] text-muted-foreground truncate">
-          {provider.provider_name}'te izle
-        </p>
-      ) : null}
+
     </>
   );
   if (isNumeric) {
