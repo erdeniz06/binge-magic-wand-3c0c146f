@@ -88,11 +88,18 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 60,
   });
 
+  const top250Q = useQuery({
+    queryKey: ["curated", "imdb_top_250"],
+    queryFn: () => getCuratedList({ data: { listName: "imdb_top_250" } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
   const topRatedQ = useQuery({
     queryKey: ["curated", "top_rated_100k"],
     queryFn: () => getCuratedList({ data: { listName: "top_rated_100k" } }),
     staleTime: 1000 * 60 * 60,
   });
+
 
   const popularQ = useInfiniteQuery({
     queryKey: ["tmdb", "popular", "tv", userLanguage],
