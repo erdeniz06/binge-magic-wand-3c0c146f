@@ -187,6 +187,20 @@ export function HomeScreen() {
       {top === "series" && (
         <div className="space-y-7 mt-5">
           <PosterRow
+            title="Top 250 Series (IMDb)"
+            shows={top250Shows}
+            showRating
+            seeAllTo="/series/curated/imdb_top_250"
+            accent={
+              top250Q.isLoading ? (
+                <span className="text-xs text-muted-foreground">Loading…</span>
+              ) : top250Q.isError ? (
+                <span className="text-xs text-destructive">Error</span>
+              ) : null
+            }
+          />
+          <PosterRow
+
             title="Top Rated Shows (100K+ Votes)"
             shows={topRatedShows}
             showRating
