@@ -6,7 +6,9 @@ export type Show = {
   country?: string;
   rating?: number;
   votes?: number;
+  network?: string;
 };
+
 
 const poster = (seed: string, w = 400, h = 600) =>
   `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
