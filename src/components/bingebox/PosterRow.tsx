@@ -87,12 +87,19 @@ export function PosterRow({
   );
 }
 
-export function ProviderBadge({ provider }: { provider: ProviderInfo }) {
+export function ProviderBadge({
+  provider,
+  size = 24,
+}: {
+  provider: ProviderInfo;
+  size?: number;
+}) {
   if (!provider.logo_path) return null;
   return (
     <span
       title={`${provider.provider_name}'te izle`}
-      className="absolute top-1 right-1 w-[22px] h-[22px] rounded-md overflow-hidden ring-1 ring-border bg-background/80 backdrop-blur"
+      className="shrink-0 inline-block rounded-md overflow-hidden ring-1 ring-border bg-background"
+      style={{ width: size, height: size }}
     >
       <img
         src={`${PROVIDER_LOGO_BASE}${provider.logo_path}`}
@@ -103,6 +110,7 @@ export function ProviderBadge({ provider }: { provider: ProviderInfo }) {
     </span>
   );
 }
+
 
 export function PosterCard({
   show,
