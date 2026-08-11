@@ -10,7 +10,9 @@ export type CuratedItem = {
   poster_path: string | null;
   vote_average: number | null;
   vote_count: number | null;
+  network: string | null;
 };
+
 
 export const getCuratedList = createServerFn({ method: "GET" })
   .inputValidator(z.object({ listName: z.string().min(1).max(64) }))
