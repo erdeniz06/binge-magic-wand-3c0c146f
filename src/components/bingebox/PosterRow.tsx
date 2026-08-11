@@ -149,7 +149,13 @@ export function PosterCard({
           ) : show.year ? (
             <p className="text-[11px] text-muted-foreground">{show.year}</p>
           ) : null}
+          {show.network ? (
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+              {show.network}
+            </p>
+          ) : null}
         </div>
+
         {provider ? <ProviderBadge provider={provider} size={24} /> : null}
       </div>
       {tracked ? (

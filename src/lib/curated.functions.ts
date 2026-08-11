@@ -10,7 +10,9 @@ export type CuratedItem = {
   poster_path: string | null;
   vote_average: number | null;
   vote_count: number | null;
+  network: string | null;
 };
+
 
 export const getCuratedList = createServerFn({ method: "GET" })
   .inputValidator(z.object({ listName: z.string().min(1).max(64) }))
@@ -32,7 +34,7 @@ export const getCuratedList = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await supabasePublic
       .from("curated_lists")
-      .select("rank, tmdb_id, title, poster_path, vote_average, vote_count")
+      .select("rank, tmdb_id, title, poster_path, vote_average, vote_count, network")
       .eq("list_name", data.listName)
       .order("rank", { ascending: true });
 

@@ -43,6 +43,7 @@ export type Database = {
           created_at: string
           id: string
           list_name: string
+          network: string | null
           poster_path: string | null
           rank: number
           title: string
@@ -54,6 +55,7 @@ export type Database = {
           created_at?: string
           id?: string
           list_name: string
+          network?: string | null
           poster_path?: string | null
           rank: number
           title: string
@@ -65,6 +67,7 @@ export type Database = {
           created_at?: string
           id?: string
           list_name?: string
+          network?: string | null
           poster_path?: string | null
           rank?: number
           title?: string

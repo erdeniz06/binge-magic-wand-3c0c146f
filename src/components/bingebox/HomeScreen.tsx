@@ -49,6 +49,7 @@ function mapCurated(
         poster_path: string | null;
         vote_average: number | null;
         vote_count: number | null;
+        network?: string | null;
       }[]
     | undefined,
 ): Show[] {
@@ -60,8 +61,10 @@ function mapCurated(
     poster: i.poster_path ? `${TMDB_IMAGE_BASE}${i.poster_path}` : "",
     rating: i.vote_average ?? undefined,
     votes: i.vote_count ?? undefined,
+    network: i.network ?? undefined,
   }));
 }
+
 
 
 
@@ -85,11 +88,18 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 60,
   });
 
+  const top250Q = useQuery({
+    queryKey: ["curated", "imdb_top_250"],
+    queryFn: () => getCuratedList({ data: { listName: "imdb_top_250" } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
   const topRatedQ = useQuery({
     queryKey: ["curated", "top_rated_100k"],
     queryFn: () => getCuratedList({ data: { listName: "top_rated_100k" } }),
     staleTime: 1000 * 60 * 60,
   });
+
 
   const popularQ = useInfiniteQuery({
     queryKey: ["tmdb", "popular", "tv", userLanguage],
@@ -124,6 +134,8 @@ export function HomeScreen() {
 
   const turkishShows = mapCurated(turkishQ.data);
   const topRatedShows = mapCurated(topRatedQ.data);
+  const top250Shows = mapCurated(top250Q.data);
+
   const popularShows = withImdb(
     mapTmdb(popularQ.data?.pages.flatMap((p: any) => p?.results ?? [])),
   );
@@ -175,6 +187,20 @@ export function HomeScreen() {
       {top === "series" && (
         <div className="space-y-7 mt-5">
           <PosterRow
+            title="Top 250 Series (IMDb)"
+            shows={top250Shows}
+            showRating
+            seeAllTo="/series/curated/imdb_top_250"
+            accent={
+              top250Q.isLoading ? (
+                <span className="text-xs text-muted-foreground">Loading…</span>
+              ) : top250Q.isError ? (
+                <span className="text-xs text-destructive">Error</span>
+              ) : null
+            }
+          />
+          <PosterRow
+
             title="Top Rated Shows (100K+ Votes)"
             shows={topRatedShows}
             showRating
