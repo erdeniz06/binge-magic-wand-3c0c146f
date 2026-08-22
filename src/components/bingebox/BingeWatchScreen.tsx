@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Send, Bookmark, Lock } from "lucide-react";
-import { bingePosts } from "@/lib/bingebox-data";
+import { MessageSquareOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BingeWatchScreen() {
@@ -13,7 +12,7 @@ export function BingeWatchScreen() {
           <span className="text-[10px] tracking-widest text-muted-foreground uppercase">Episode-gated</span>
         </div>
         <div className="inline-flex rounded-full bg-secondary p-1 text-sm">
-          {(["following","discover"] as const).map((t) => (
+          {(["following", "discover"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -28,66 +27,15 @@ export function BingeWatchScreen() {
         </div>
       </header>
 
-      <div className="divide-y divide-border">
-        {bingePosts.map((p) => <PostCard key={p.id} post={typeof p === "object" ? p : p} />)}
-        <LockedPreview />
+      <div className="px-6 py-20 flex flex-col items-center text-center gap-3">
+        <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
+          <MessageSquareOff className="w-6 h-6 text-muted-foreground" />
+        </div>
+        <p className="text-sm font-semibold">Henüz gerçek kullanıcı yorumları yok</p>
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
+          Bölüm bazlı, spoiler'sız tartışmalar gerçek kullanıcılar katıldığında burada görünecek.
+        </p>
       </div>
     </div>
-  );
-}
-
-function PostCard({ post }: { post: typeof bingePosts[number] }) {
-  const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(post.likes);
-  return (
-    <article className="px-4 py-4 space-y-3">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold">
-          {post.initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold leading-tight">@{post.user}</p>
-          <p className="text-[11px] text-muted-foreground">
-            {post.show} · <span className="text-foreground/80">{post.episode}</span> · {post.time}
-          </p>
-        </div>
-      </div>
-
-      <div className="rounded-2xl overflow-hidden aspect-[4/5] bg-card">
-        <img src={post.poster} alt={post.show} className="w-full h-full object-cover" />
-      </div>
-
-      <div className="flex items-center gap-4 text-foreground">
-        <button onClick={() => { setLiked(!liked); setLikes(likes + (liked ? -1 : 1)); }}>
-          <Heart className={cn("w-6 h-6 transition", liked && "fill-[var(--heart)] text-[var(--heart)]")} />
-        </button>
-        <button><MessageCircle className="w-6 h-6" /></button>
-        <button><Send className="w-6 h-6" /></button>
-        <button className="ml-auto"><Bookmark className="w-6 h-6" /></button>
-      </div>
-
-      <div className="text-sm leading-snug">
-        <span className="font-semibold mr-1.5">@{post.user}</span>
-        {post.text}
-      </div>
-      <p className="text-xs text-muted-foreground">{likes} likes · {post.comments} comments</p>
-    </article>
-  );
-}
-
-function LockedPreview() {
-  return (
-    <article className="px-4 py-6 flex items-start gap-3">
-      <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold">K</div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold">@kerem on The Last of Us · S2 E5</p>
-        <div className="mt-2 rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-          <Lock className="w-5 h-5 text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">
-            Bu bölümü izlemediğin için yorum ve tartışmalar gizli. Spoilersız ortam.
-          </p>
-        </div>
-      </div>
-    </article>
   );
 }
