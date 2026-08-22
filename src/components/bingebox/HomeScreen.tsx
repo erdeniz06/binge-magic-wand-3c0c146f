@@ -13,21 +13,28 @@ import { getCuratedList } from "@/lib/curated.functions";
 import { getImdbRatings } from "@/lib/imdb.functions";
 import { cn } from "@/lib/utils";
 
+// Reality / Talk genres — excluded so "Popular This Week" stays scripted series only
+const EXCLUDED_GENRES = new Set([10764, 10767]);
+
 type TmdbShow = {
   id: number;
   name: string;
   original_name?: string;
   origin_country?: string[];
+  genre_ids?: number[];
   poster_path: string | null;
   first_air_date: string;
   vote_average?: number;
   vote_count?: number;
 };
 
-function mapTmdb(results: TmdbShow[] | undefined): Show[] {
+function mapTmdb(results: TmdbShow[] | undefined, excludeGenres = false): Show[] {
   if (!results) return [];
   return results
     .filter((r) => r.poster_path)
+    .filter(
+      (r) => !excludeGenres || !r.genre_ids?.some((g) => EXCLUDED_GENRES.has(g)),
+    )
     .map((r) => ({
       id: String(r.id),
       // Turkish productions keep their original Turkish title
@@ -101,6 +108,40 @@ export function HomeScreen() {
   });
 
 
+  const sitcomsQ = useQuery({
+    queryKey: ["tmdb", "discover", "sitcoms", userLanguage],
+    queryFn: () =>
+      getTvShows({
+        data: {
+          endpoint: "/discover/tv",
+          language: userLanguage,
+          params: {
+            with_genres: "35",
+            sort_by: "vote_average.desc",
+            "vote_count.gte": "100",
+          },
+        },
+      }),
+    staleTime: 1000 * 60 * 60 * 12,
+  });
+
+  const crimeQ = useQuery({
+    queryKey: ["tmdb", "discover", "crime", userLanguage],
+    queryFn: () =>
+      getTvShows({
+        data: {
+          endpoint: "/discover/tv",
+          language: userLanguage,
+          params: {
+            with_genres: "80",
+            sort_by: "vote_average.desc",
+            "vote_count.gte": "100",
+          },
+        },
+      }),
+    staleTime: 1000 * 60 * 60 * 12,
+  });
+
   const popularQ = useInfiniteQuery({
     queryKey: ["tmdb", "popular", "tv", userLanguage],
     queryFn: ({ pageParam }) =>
@@ -137,8 +178,13 @@ export function HomeScreen() {
   const top250Shows = mapCurated(top250Q.data);
 
   const popularShows = withImdb(
-    mapTmdb(popularQ.data?.pages.flatMap((p: any) => p?.results ?? [])),
+    mapTmdb(
+      popularQ.data?.pages.flatMap((p: any) => p?.results ?? []),
+      true,
+    ),
   );
+  const sitcomShows = mapTmdb(sitcomsQ.data?.results as TmdbShow[] | undefined).slice(0, 10);
+  const crimeShows = mapTmdb(crimeQ.data?.results as TmdbShow[] | undefined).slice(0, 10);
 
 
   return (
@@ -222,6 +268,33 @@ export function HomeScreen() {
               <span className="text-xs text-[var(--classic)]">
                 {turkishQ.isLoading ? "Loading…" : turkishQ.isError ? "Error" : "TR"}
               </span>
+            }
+          />
+
+          <PosterRow
+            title="Top 10 Sitcoms"
+            shows={sitcomShows}
+            showRating
+            seeAllTo="/series/top-10-sitcoms"
+            accent={
+              sitcomsQ.isLoading ? (
+                <span className="text-xs text-muted-foreground">Loading…</span>
+              ) : sitcomsQ.isError ? (
+                <span className="text-xs text-destructive">Error</span>
+              ) : null
+            }
+          />
+          <PosterRow
+            title="Top 10 Crime / Mystery"
+            shows={crimeShows}
+            showRating
+            seeAllTo="/series/top-10-crime"
+            accent={
+              crimeQ.isLoading ? (
+                <span className="text-xs text-muted-foreground">Loading…</span>
+              ) : crimeQ.isError ? (
+                <span className="text-xs text-destructive">Error</span>
+              ) : null
             }
           />
 

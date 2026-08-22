@@ -35,6 +35,9 @@ export const Route = createFileRoute("/_authenticated/series/$category")({
   component: CategoryPage,
 });
 
+// Reality / Talk genres — excluded from popular feeds (scripted series only)
+const EXCLUDED_GENRES = new Set([10764, 10767]);
+
 type TmdbItem = {
   id: number;
   name: string;
@@ -43,6 +46,7 @@ type TmdbItem = {
   vote_average: number;
   vote_count: number;
   overview: string;
+  genre_ids?: number[];
 };
 
 function CategoryPage() {
@@ -63,6 +67,7 @@ function CategoryPage() {
         },
       }),
     getNextPageParam: (last) => {
+      if (cat.limit) return undefined;
       const page = last.page ?? 1;
       const total = last.total_pages ?? 1;
       return page < total ? page + 1 : undefined;
@@ -94,10 +99,17 @@ function CategoryPage() {
 
   const items: TmdbItem[] = (
     query.data?.pages.flatMap((p) => (p.results ?? []) as TmdbItem[]) ?? []
-  ).map((it) => {
-    const hit = imdbMap.get(it.id);
-    return hit ? { ...it, vote_average: hit.rating, vote_count: hit.votes } : it;
-  });
+  )
+    .filter(
+      (it) =>
+        category !== "popular-this-week" ||
+        !it.genre_ids?.some((g) => EXCLUDED_GENRES.has(g)),
+    )
+    .slice(0, cat.limit ?? Number.POSITIVE_INFINITY)
+    .map((it) => {
+      const hit = imdbMap.get(it.id);
+      return hit ? { ...it, vote_average: hit.rating, vote_count: hit.votes } : it;
+    });
 
 
   return (
