@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 type UserShow = {
@@ -31,6 +31,7 @@ export function ProfileScreen() {
   const navigate = useNavigate();
   const [name, setName] = useState("Your Name");
   const [handle, setHandle] = useState("username");
+  const [memberSince, setMemberSince] = useState<string | null>(null);
   const [shows, setShows] = useState<UserShow[] | null>(null);
   const [tab, setTab] = useState<StatusTab>("watched");
 
@@ -40,6 +41,14 @@ export function ProfileScreen() {
         const u = data.user.email.split("@")[0];
         setHandle(u);
         setName(data.user.user_metadata?.name || u);
+      }
+      if (data.user?.created_at) {
+        setMemberSince(
+          new Date(data.user.created_at).toLocaleDateString("tr-TR", {
+            month: "long",
+            year: "numeric",
+          }),
+        );
       }
     });
   }, []);
@@ -68,16 +77,49 @@ export function ProfileScreen() {
       0,
     );
     const year = new Date().getFullYear();
+    // Watched shows count for the year they were actually finished (completed_at),
+    // not when they were last edited. Watching shows count by recent activity.
     const thisYear = tracked.filter((r) => {
-      const d = r.completed_at ?? r.updated_at;
+      const d = r.status === "watched" ? (r.completed_at ?? r.updated_at) : r.updated_at;
       return d ? new Date(d).getFullYear() === year : false;
     }).length;
+    const rated = rows.filter((r) => r.rating != null && r.rating > 0);
+    const avg = rated.length
+      ? rated.reduce((s, r) => s + (r.rating ?? 0), 0) / rated.length
+      : null;
     return {
       series: tracked.length,
       episodes,
       hours: Math.round(minutes / 60),
       thisYear,
+      avg,
+      ratedCount: rated.length,
     };
+  }, [shows]);
+
+  const dist = useMemo(() => {
+    const rows = (shows ?? []).filter((r) => r.rating != null && r.rating > 0);
+    const counts = Array.from({ length: 10 }, (_, i) => ({ score: 10 - i, count: 0 }));
+    for (const r of rows) {
+      const s = Math.round(r.rating ?? 0);
+      if (s >= 1 && s <= 10) counts[10 - s].count++;
+    }
+    const max = Math.max(1, ...counts.map((c) => c.count));
+    return { counts, max, total: rows.length };
+  }, [shows]);
+
+  const thisYearShows = useMemo(() => {
+    const year = new Date().getFullYear();
+    return (shows ?? [])
+      .filter(
+        (r) =>
+          r.status === "watched" &&
+          r.completed_at &&
+          new Date(r.completed_at).getFullYear() === year &&
+          r.poster_path,
+      )
+      .sort((a, b) => +new Date(b.completed_at!) - +new Date(a.completed_at!))
+      .slice(0, 12);
   }, [shows]);
 
   const byStatus = useMemo(() => {
@@ -126,11 +168,12 @@ export function ProfileScreen() {
           <p className="text-sm text-muted-foreground">@{handle}</p>
           <p className="text-xs text-muted-foreground mt-2">
             {stats.series === 0 ? "Henüz dizi eklenmedi" : `${stats.series} dizi takip ediliyor`}
+            {memberSince ? ` · ${memberSince}'den beri üye` : ""}
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-card border border-border p-5 grid grid-cols-3 text-center">
+      <div className="rounded-2xl bg-card border border-border p-5 grid grid-cols-4 text-center">
         <Stat
           value={stats.series.toLocaleString()}
           label="Series"
@@ -138,7 +181,61 @@ export function ProfileScreen() {
         />
         <Stat value={stats.episodes.toLocaleString()} label="Episodes" />
         <Stat value={`${stats.hours.toLocaleString()}h`} label="Hours" />
+        <Stat
+          value={stats.avg != null ? stats.avg.toFixed(1) : "—"}
+          label="Avg Rating"
+          sub={stats.ratedCount > 0 ? `${stats.ratedCount} rated` : undefined}
+        />
       </div>
+
+      {dist.total > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">
+            Rating Distribution
+          </h2>
+          <div className="rounded-2xl bg-card border border-border p-4 space-y-1.5">
+            {dist.counts.map(({ score, count }) => (
+              <div key={score} className="flex items-center gap-2">
+                <span className="w-4 text-right text-[11px] font-semibold text-muted-foreground flex items-center justify-end gap-0.5">
+                  {score}
+                </span>
+                <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[var(--gold)] transition-all"
+                    style={{ width: `${(count / dist.max) * 100}%` }}
+                  />
+                </div>
+                <span className="w-6 text-[11px] text-muted-foreground">{count}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {thisYearShows.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">
+            Watched in {new Date().getFullYear()}
+          </h2>
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
+            {thisYearShows.map((s) => (
+              <Link
+                key={s.tmdb_id}
+                to="/series/tv/$id"
+                params={{ id: String(s.tmdb_id) }}
+                className="shrink-0"
+              >
+                <img
+                  src={`${TMDB_IMG}${s.poster_path}`}
+                  className="w-20 h-28 rounded-lg object-cover"
+                  alt={s.title}
+                  loading="lazy"
+                />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="space-y-3">
         <div className="flex gap-1 rounded-xl bg-secondary p-1">
@@ -170,7 +267,12 @@ export function ProfileScreen() {
         ) : (
           <div className="grid grid-cols-3 gap-2.5">
             {current.map((s) => (
-              <div key={s.tmdb_id} className="space-y-1">
+              <Link
+                key={s.tmdb_id}
+                to="/series/tv/$id"
+                params={{ id: String(s.tmdb_id) }}
+                className="space-y-1"
+              >
                 {s.poster_path ? (
                   <img
                     src={`${TMDB_IMG}${s.poster_path}`}
@@ -182,7 +284,13 @@ export function ProfileScreen() {
                   <div className="w-full aspect-[2/3] rounded-lg bg-secondary" />
                 )}
                 <p className="text-[11px] leading-tight truncate">{s.title}</p>
-              </div>
+                {s.rating != null && (
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                    <Star className="w-2.5 h-2.5 fill-[var(--gold)] text-[var(--gold)]" />
+                    {s.rating}/10
+                  </p>
+                )}
+              </Link>
             ))}
           </div>
         )}
@@ -197,13 +305,19 @@ export function ProfileScreen() {
         ) : (
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
             {favorites.map((f) => (
-              <img
+              <Link
                 key={f.tmdb_id}
-                src={`${TMDB_IMG}${f.poster_path}`}
-                className="w-20 h-28 rounded-lg object-cover shrink-0"
-                alt={f.title}
-                loading="lazy"
-              />
+                to="/series/tv/$id"
+                params={{ id: String(f.tmdb_id) }}
+                className="shrink-0"
+              >
+                <img
+                  src={`${TMDB_IMG}${f.poster_path}`}
+                  className="w-20 h-28 rounded-lg object-cover"
+                  alt={f.title}
+                  loading="lazy"
+                />
+              </Link>
             ))}
           </div>
         )}
@@ -222,21 +336,27 @@ export function ProfileScreen() {
               .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))
               .slice(0, 5)
               .map((s) => (
-                <li key={s.tmdb_id} className="flex items-center gap-3">
-                  {s.poster_path ? (
-                    <img src={`${TMDB_IMG}${s.poster_path}`} alt="" className="w-10 h-14 rounded-md object-cover" />
-                  ) : (
-                    <div className="w-10 h-14 rounded-md bg-secondary" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{s.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {s.episodes_watched > 0 ? `${s.episodes_watched} bölüm` : s.status}
-                    </p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(s.updated_at).toLocaleDateString()}
-                  </span>
+                <li key={s.tmdb_id}>
+                  <Link
+                    to="/series/tv/$id"
+                    params={{ id: String(s.tmdb_id) }}
+                    className="flex items-center gap-3"
+                  >
+                    {s.poster_path ? (
+                      <img src={`${TMDB_IMG}${s.poster_path}`} alt="" className="w-10 h-14 rounded-md object-cover" />
+                    ) : (
+                      <div className="w-10 h-14 rounded-md bg-secondary" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{s.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {s.episodes_watched > 0 ? `${s.episodes_watched} bölüm` : s.status}
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(s.updated_at).toLocaleDateString()}
+                    </span>
+                  </Link>
                 </li>
               ))}
           </ul>
@@ -249,8 +369,8 @@ export function ProfileScreen() {
 function Stat({ value, label, sub }: { value: string; label: string; sub?: string }) {
   return (
     <div>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-xl font-bold">{value}</p>
+      <p className="text-[11px] text-muted-foreground">{label}</p>
       {sub && <p className="text-[10px] text-muted-foreground/80 mt-0.5">{sub}</p>}
     </div>
   );

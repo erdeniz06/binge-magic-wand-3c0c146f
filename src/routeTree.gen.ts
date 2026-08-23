@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedSeriesCategoryRouteImport } from './routes/_authenticated/series.$category'
+import { Route as AuthenticatedPersonIdRouteImport } from './routes/_authenticated/person.$id'
 import { Route as AuthenticatedSeriesTvIdRouteImport } from './routes/_authenticated/series.tv.$id'
 import { Route as AuthenticatedSeriesCuratedListRouteImport } from './routes/_authenticated/series.curated.$list'
 
@@ -42,6 +43,11 @@ const AuthenticatedSeriesCategoryRoute =
     path: '/series/$category',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPersonIdRoute = AuthenticatedPersonIdRouteImport.update({
+  id: '/person/$id',
+  path: '/person/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSeriesTvIdRoute = AuthenticatedSeriesTvIdRouteImport.update({
   id: '/series/tv/$id',
   path: '/series/tv/$id',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
+  '/person/$id': typeof AuthenticatedPersonIdRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
   '/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
+  '/person/$id': typeof AuthenticatedPersonIdRoute
   '/series/$category': typeof AuthenticatedSeriesCategoryRoute
   '/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/person/$id': typeof AuthenticatedPersonIdRoute
   '/_authenticated/series/$category': typeof AuthenticatedSeriesCategoryRoute
   '/_authenticated/series/curated/$list': typeof AuthenticatedSeriesCuratedListRoute
   '/_authenticated/series/tv/$id': typeof AuthenticatedSeriesTvIdRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/api/chat'
+    | '/person/$id'
     | '/series/$category'
     | '/series/curated/$list'
     | '/series/tv/$id'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/'
+    | '/person/$id'
     | '/series/$category'
     | '/series/curated/$list'
     | '/series/tv/$id'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/_authenticated/'
+    | '/_authenticated/person/$id'
     | '/_authenticated/series/$category'
     | '/_authenticated/series/curated/$list'
     | '/_authenticated/series/tv/$id'
@@ -151,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSeriesCategoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/person/$id': {
+      id: '/_authenticated/person/$id'
+      path: '/person/$id'
+      fullPath: '/person/$id'
+      preLoaderRoute: typeof AuthenticatedPersonIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/series/tv/$id': {
       id: '/_authenticated/series/tv/$id'
       path: '/series/tv/$id'
@@ -170,6 +189,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedPersonIdRoute: typeof AuthenticatedPersonIdRoute
   AuthenticatedSeriesCategoryRoute: typeof AuthenticatedSeriesCategoryRoute
   AuthenticatedSeriesCuratedListRoute: typeof AuthenticatedSeriesCuratedListRoute
   AuthenticatedSeriesTvIdRoute: typeof AuthenticatedSeriesTvIdRoute
@@ -177,6 +197,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedPersonIdRoute: AuthenticatedPersonIdRoute,
   AuthenticatedSeriesCategoryRoute: AuthenticatedSeriesCategoryRoute,
   AuthenticatedSeriesCuratedListRoute: AuthenticatedSeriesCuratedListRoute,
   AuthenticatedSeriesTvIdRoute: AuthenticatedSeriesTvIdRoute,
