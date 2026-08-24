@@ -63,8 +63,12 @@ export function LogActivityDialog({
   const [season, setSeason] = useState<number | null>(null);
   const [rating, setRating] = useState<number | null>(null);
   const [notify, setNotify] = useState(false);
+  const [watchedYear, setWatchedYear] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const invalidate = useInvalidateUserShows();
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   const searchQ = useQuery({
     queryKey: ["tmdb", "search", query, language],
@@ -104,6 +108,7 @@ export function LogActivityDialog({
     setSeason(null);
     setRating(null);
     setNotify(false);
+    setWatchedYear(null);
   };
 
   const close = (next: boolean) => {
@@ -124,6 +129,8 @@ export function LogActivityDialog({
   const submit = async () => {
     if (!meta || !mode) return;
     setSaving(true);
+    const watchedAt =
+      watchedYear != null ? new Date(Date.UTC(watchedYear, 5, 15, 12)) : undefined;
     try {
       if (mode === "watchlist") {
         await setWatchlist(meta, notify);
@@ -131,18 +138,18 @@ export function LogActivityDialog({
           notify ? `${meta.title} watchlist'e eklendi, takip açık` : `${meta.title} watchlist'e eklendi`,
         );
       } else if (mode === "show") {
-        if (rating != null) await rateShow(meta, rating);
-        else await logWholeShow(meta, seasons.length);
+        if (rating != null) await rateShow(meta, rating, watchedAt);
+        else await logWholeShow(meta, seasons.length, watchedAt);
         toast.success(`${meta.title} izlendi olarak işaretlendi`);
       } else if (mode === "season") {
         if (season == null) {
           toast.error("Bir sezon seç");
           return;
         }
-        await logSeason(meta, season, episodeCountBySeason);
+        await logSeason(meta, season, episodeCountBySeason, watchedAt);
         toast.success(`${meta.title} S${season} izlendi`);
       } else {
-        await logEpisode(meta, 1);
+        await logEpisode(meta, 1, watchedAt);
         toast.success(`${meta.title} · 1 bölüm eklendi`);
       }
       invalidate();
@@ -168,6 +175,7 @@ export function LogActivityDialog({
                     setShowId(null);
                     setSeason(null);
                     setRating(null);
+                    setWatchedYear(null);
                   } else {
                     setMode(null);
                     setQuery("");
@@ -364,6 +372,44 @@ export function LogActivityDialog({
                         />
                       </span>
                     </button>
+                  )}
+
+                  {mode !== "watchlist" && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
+                        Ne zaman izledin?
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          onClick={() => setWatchedYear(null)}
+                          className={cn(
+                            "h-9 px-3 rounded-lg border text-xs font-semibold transition",
+                            watchedYear === null
+                              ? "bg-foreground text-background border-foreground"
+                              : "bg-card border-border hover:bg-accent",
+                          )}
+                        >
+                          Şimdi
+                        </button>
+                        {yearOptions.map((y) => (
+                          <button
+                            key={y}
+                            onClick={() => setWatchedYear(y)}
+                            className={cn(
+                              "h-9 px-3 rounded-lg border text-xs font-semibold transition",
+                              watchedYear === y
+                                ? "bg-foreground text-background border-foreground"
+                                : "bg-card border-border hover:bg-accent",
+                            )}
+                          >
+                            {y}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Geçmiş bir yıl seçersen bu yılki istatistiklerine sayılmaz.
+                      </p>
+                    </div>
                   )}
 
                   <button

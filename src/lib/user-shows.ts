@@ -80,7 +80,7 @@ async function save(row: Record<string, unknown>) {
 }
 
 /** Rating the whole show is the strongest signal: watched + 100% progress. */
-export async function rateShow(meta: ShowMeta, rating: number | null) {
+export async function rateShow(meta: ShowMeta, rating: number | null, watchedAt?: Date) {
   await save({
     tmdb_id: meta.tmdb_id,
     title: meta.title,
@@ -90,12 +90,12 @@ export async function rateShow(meta: ShowMeta, rating: number | null) {
     rating,
     status: "watched",
     episodes_watched: meta.total_episodes ?? 0,
-    completed_at: new Date().toISOString(),
+    completed_at: (watchedAt ?? new Date()).toISOString(),
   });
 }
 
 /** Mark the entire show as completed without a rating. */
-export async function logWholeShow(meta: ShowMeta, seasonCount: number) {
+export async function logWholeShow(meta: ShowMeta, seasonCount: number, watchedAt?: Date) {
   const prev = await existing(meta.tmdb_id);
   await save({
     tmdb_id: meta.tmdb_id,
@@ -107,7 +107,7 @@ export async function logWholeShow(meta: ShowMeta, seasonCount: number) {
     status: "watched",
     episodes_watched: meta.total_episodes ?? 0,
     seasons_logged: Array.from({ length: seasonCount }, (_, i) => i + 1),
-    completed_at: new Date().toISOString(),
+    completed_at: watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString(),
   });
 }
 
@@ -120,6 +120,7 @@ export async function logSeason(
   meta: ShowMeta,
   season: number,
   episodeCountBySeason: Record<number, number>,
+  watchedAt?: Date,
 ) {
   const prev = await existing(meta.tmdb_id);
   const seasons = Array.from(new Set([...(prev?.seasons_logged ?? []), season])).sort(
@@ -139,12 +140,14 @@ export async function logSeason(
     seasons_logged: seasons,
     episodes_watched: rated ? (total ?? episodes) : episodes,
     status: rated || done ? "watched" : "watching",
-    completed_at: rated || done ? (prev?.completed_at ?? new Date().toISOString()) : null,
+    completed_at: rated || done
+      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      : null,
   });
 }
 
 /** Log a single episode: bumps progress by one, keeps status at watching. */
-export async function logEpisode(meta: ShowMeta, count = 1) {
+export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
   const prev = await existing(meta.tmdb_id);
   const total = meta.total_episodes ?? prev?.total_episodes ?? null;
   const episodes = Math.min((prev?.episodes_watched ?? 0) + count, total ?? Infinity);
@@ -160,7 +163,9 @@ export async function logEpisode(meta: ShowMeta, count = 1) {
     seasons_logged: prev?.seasons_logged ?? [],
     episodes_watched: rated ? (total ?? episodes) : episodes,
     status: rated || done ? "watched" : "watching",
-    completed_at: rated || done ? (prev?.completed_at ?? new Date().toISOString()) : null,
+    completed_at: rated || done
+      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      : null,
   });
 }
 
