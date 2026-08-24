@@ -1,7 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type UserShowStatus = "plan_to_watch" | "watchlist" | "watching" | "watched" | "dropped";
+export type UserShowStatus =
+  | "plan_to_watch"
+  | "watchlist"
+  | "watching"
+  | "partly_watched"
+  | "watched"
+  | "dropped";
 
 export type UserShow = {
   tmdb_id: number;
@@ -139,7 +145,7 @@ export async function logSeason(
     rating: prev?.rating ?? null,
     seasons_logged: seasons,
     episodes_watched: rated ? (total ?? episodes) : episodes,
-    status: rated || done ? "watched" : "watching",
+    status: rated || done ? "watched" : "partly_watched",
     completed_at: rated || done
       ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
       : null,
@@ -181,7 +187,10 @@ export async function setWatchlist(meta: ShowMeta, notify: boolean) {
     rating: prev?.rating ?? null,
     seasons_logged: prev?.seasons_logged ?? [],
     episodes_watched: prev?.episodes_watched ?? 0,
-    status: prev?.status === "watched" || prev?.status === "watching" ? prev.status : "watchlist",
+    status:
+      prev?.status === "watched" || prev?.status === "watching" || prev?.status === "partly_watched"
+        ? prev.status
+        : "watchlist",
     notify,
   });
 }

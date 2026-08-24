@@ -150,7 +150,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
       slug,
       title: `${def.label} Dizileri`,
       endpoint: "/discover/tv",
-      params: { sort_by: "vote_average.desc", "vote_count.gte": "150", ...def.params },
+      params: { sort_by: "vote_average.desc", "vote_count.gte": "1000", ...def.params },
     };
   }
 
@@ -163,7 +163,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",
-        "vote_count.gte": "150",
+        "vote_count.gte": "1000",
         ...(def.gte ? { "air_date.gte": def.gte } : {}),
         ...(def.lte ? { "air_date.lte": def.lte } : {}),
       },
@@ -179,7 +179,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",
-        "vote_count.gte": "100",
+        "vote_count.gte": "1000",
         with_original_language: def.iso,
       },
     };
@@ -194,7 +194,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",
-        "vote_count.gte": "100",
+        "vote_count.gte": "1000",
         with_origin_country: def.iso,
       },
     };

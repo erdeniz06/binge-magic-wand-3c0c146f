@@ -1,0 +1,2 @@
+ALTER TABLE public.user_shows DROP CONSTRAINT user_shows_status_check;
+ALTER TABLE public.user_shows ADD CONSTRAINT user_shows_status_check CHECK (status = ANY (ARRAY['plan_to_watch'::text, 'watchlist'::text, 'watching'::text, 'partly_watched'::text, 'watched'::text, 'dropped'::text]));
