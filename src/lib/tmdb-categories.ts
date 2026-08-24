@@ -13,7 +13,7 @@ const top10 = (genre: number) => ({
   params: {
     with_genres: String(genre),
     sort_by: "vote_average.desc",
-    "vote_count.gte": "100",
+    "vote_count.gte": "1000",
   },
   limit: 10,
 });
@@ -31,7 +31,7 @@ export const TMDB_CATEGORIES: Record<string, TmdbCategory> = {
     params: {
       with_origin_country: "TR",
       sort_by: "vote_average.desc",
-      "vote_count.gte": "50",
+      "vote_count.gte": "1000",
     },
     accentClass: "text-[var(--classic)]",
   },

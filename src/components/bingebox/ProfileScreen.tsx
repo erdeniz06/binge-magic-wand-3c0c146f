@@ -19,11 +19,12 @@ type UserShow = {
 const DEFAULT_RUNTIME = 45;
 const TMDB_IMG = "https://image.tmdb.org/t/p/w200";
 
-type StatusTab = "watched" | "watching" | "watchlist";
+type StatusTab = "watched" | "watching" | "partly_watched" | "watchlist";
 
 const tabs: { id: StatusTab; label: string }[] = [
   { id: "watched", label: "Watched" },
   { id: "watching", label: "Watching" },
+  { id: "partly_watched", label: "Partly" },
   { id: "watchlist", label: "Watchlist" },
 ];
 
@@ -70,7 +71,9 @@ export function ProfileScreen() {
 
   const stats = useMemo(() => {
     const rows = shows ?? [];
-    const tracked = rows.filter((r) => r.status === "watched" || r.status === "watching");
+    const tracked = rows.filter(
+      (r) => r.status === "watched" || r.status === "watching" || r.status === "partly_watched",
+    );
     const episodes = rows.reduce((sum, r) => sum + (r.episodes_watched ?? 0), 0);
     const minutes = rows.reduce(
       (sum, r) => sum + (r.episodes_watched ?? 0) * (r.episode_runtime || DEFAULT_RUNTIME),
@@ -127,6 +130,7 @@ export function ProfileScreen() {
     return {
       watched: rows.filter((r) => r.status === "watched"),
       watching: rows.filter((r) => r.status === "watching"),
+      partly_watched: rows.filter((r) => r.status === "partly_watched"),
       watchlist: rows.filter((r) => r.status === "watchlist"),
     } as Record<StatusTab, UserShow[]>;
   }, [shows]);

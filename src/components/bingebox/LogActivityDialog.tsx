@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bell, BellOff, ChevronLeft, Loader2, Search, Star } from "lucide-react";
+import { Bell, BellOff, Check, ChevronLeft, Loader2, Search, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -60,7 +60,7 @@ export function LogActivityDialog({
   const [mode, setMode] = useState<LogMode | null>(null);
   const [query, setQuery] = useState("");
   const [showId, setShowId] = useState<number | null>(null);
-  const [season, setSeason] = useState<number | null>(null);
+  const [seasonSel, setSeasonSel] = useState<number[]>([]);
   const [rating, setRating] = useState<number | null>(null);
   const [notify, setNotify] = useState(false);
   const [watchedYear, setWatchedYear] = useState<number | null>(null);
@@ -105,7 +105,7 @@ export function LogActivityDialog({
     setMode(null);
     setQuery("");
     setShowId(null);
-    setSeason(null);
+    setSeasonSel([]);
     setRating(null);
     setNotify(false);
     setWatchedYear(null);
@@ -142,12 +142,19 @@ export function LogActivityDialog({
         else await logWholeShow(meta, seasons.length, watchedAt);
         toast.success(`${meta.title} izlendi olarak işaretlendi`);
       } else if (mode === "season") {
-        if (season == null) {
-          toast.error("Bir sezon seç");
+        if (seasonSel.length === 0) {
+          toast.error("En az bir sezon seç");
           return;
         }
-        await logSeason(meta, season, episodeCountBySeason, watchedAt);
-        toast.success(`${meta.title} S${season} izlendi`);
+        const ordered = [...seasonSel].sort((a, b) => a - b);
+        for (const s of ordered) {
+          await logSeason(meta, s, episodeCountBySeason, watchedAt);
+        }
+        toast.success(
+          ordered.length === 1
+            ? `${meta.title} S${ordered[0]} izlendi`
+            : `${meta.title} · ${ordered.length} sezon izlendi (S${ordered.join(", S")})`,
+        );
       } else {
         await logEpisode(meta, 1, watchedAt);
         toast.success(`${meta.title} · 1 bölüm eklendi`);
@@ -173,7 +180,7 @@ export function LogActivityDialog({
                 onClick={() => {
                   if (showId) {
                     setShowId(null);
-                    setSeason(null);
+                    setSeasonSel([]);
                     setRating(null);
                     setWatchedYear(null);
                   } else {
@@ -241,7 +248,7 @@ export function LogActivityDialog({
                       key={r.id}
                       onClick={() => {
                         setShowId(r.id);
-                        setSeason(null);
+                        setSeasonSel([]);
                       }}
                       className="w-full flex items-center gap-3 text-left rounded-xl bg-card border border-border hover:bg-accent transition p-2.5"
                     >
@@ -295,27 +302,43 @@ export function LogActivityDialog({
                   {(mode === "season" || mode === "episode") && (
                     <div className="space-y-2">
                       <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-                        Sezon
+                        {mode === "season" ? "Sezonlar (birden fazla seçebilirsin)" : "Sezon"}
                       </p>
                       <div className="grid grid-cols-4 gap-2">
-                        {seasons.map((s) => (
-                          <button
-                            key={s.season_number}
-                            onClick={() => setSeason(s.season_number)}
-                            className={cn(
-                              "h-10 rounded-lg border text-sm transition",
-                              season === s.season_number
-                                ? "bg-foreground text-background border-foreground"
-                                : "bg-card border-border hover:bg-accent",
-                            )}
-                          >
-                            S{s.season_number}
-                          </button>
-                        ))}
+                        {seasons.map((s) => {
+                          const selected = seasonSel.includes(s.season_number);
+                          return (
+                            <button
+                              key={s.season_number}
+                              onClick={() =>
+                                setSeasonSel((prev) =>
+                                  mode === "episode"
+                                    ? [s.season_number]
+                                    : prev.includes(s.season_number)
+                                      ? prev.filter((n) => n !== s.season_number)
+                                      : [...prev, s.season_number],
+                                )
+                              }
+                              className={cn(
+                                "relative h-10 rounded-lg border text-sm transition",
+                                selected
+                                  ? "bg-foreground text-background border-foreground"
+                                  : "bg-card border-border hover:bg-accent",
+                              )}
+                            >
+                              S{s.season_number}
+                              {selected && mode === "season" && (
+                                <Check className="absolute top-0.5 right-0.5 w-3 h-3" />
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
-                      {season != null && (
+                      {seasonSel.length > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          S{season} · {episodeCountBySeason[season]} bölüm
+                          {mode === "season"
+                            ? `${seasonSel.length} sezon seçildi · ${seasonSel.reduce((sum, n) => sum + (episodeCountBySeason[n] ?? 0), 0)} bölüm`
+                            : `S${seasonSel[0]} · ${episodeCountBySeason[seasonSel[0]]} bölüm`}
                         </p>
                       )}
                     </div>
@@ -414,7 +437,7 @@ export function LogActivityDialog({
 
                   <button
                     onClick={submit}
-                    disabled={saving || (mode === "season" && season == null)}
+                    disabled={saving || (mode === "season" && seasonSel.length === 0)}
                     className="w-full rounded-full bg-foreground text-background py-3 text-sm font-semibold disabled:opacity-50"
                   >
                     {saving ? "Kaydediliyor…" : "Kaydet"}

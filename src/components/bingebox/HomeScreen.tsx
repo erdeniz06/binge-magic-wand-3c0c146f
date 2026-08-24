@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Heart } from "lucide-react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { PosterRow } from "./PosterRow";
@@ -95,12 +94,6 @@ export function HomeScreen() {
     staleTime: 1000 * 60 * 60,
   });
 
-  const top250Q = useQuery({
-    queryKey: ["curated", "imdb_top_250"],
-    queryFn: () => getCuratedList({ data: { listName: "imdb_top_250" } }),
-    staleTime: 1000 * 60 * 60,
-  });
-
   const topRatedQ = useQuery({
     queryKey: ["curated", "top_rated_100k"],
     queryFn: () => getCuratedList({ data: { listName: "top_rated_100k" } }),
@@ -118,7 +111,7 @@ export function HomeScreen() {
           params: {
             with_genres: "35",
             sort_by: "vote_average.desc",
-            "vote_count.gte": "100",
+            "vote_count.gte": "1000",
           },
         },
       }),
@@ -135,7 +128,7 @@ export function HomeScreen() {
           params: {
             with_genres: "80",
             sort_by: "vote_average.desc",
-            "vote_count.gte": "100",
+            "vote_count.gte": "1000",
           },
         },
       }),
@@ -174,8 +167,10 @@ export function HomeScreen() {
     });
 
   const turkishShows = mapCurated(turkishQ.data);
-  const topRatedShows = mapCurated(topRatedQ.data);
-  const top250Shows = mapCurated(top250Q.data);
+  // Same ordering as the TMDB top-rated sections: highest rating first
+  const topRatedShows = mapCurated(topRatedQ.data).sort(
+    (a, b) => (b.rating ?? 0) - (a.rating ?? 0),
+  );
 
   const popularShows = withImdb(
     mapTmdb(
@@ -191,18 +186,68 @@ export function HomeScreen() {
     <div className="pb-32">
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
-          <Link to="/series/curated/$list" params={{ list: "turkish_classics" }} className="flex flex-col">
-            <span className="text-2xl font-extrabold text-[var(--classic)] leading-none">20</span>
-            <span className="text-[11px] text-muted-foreground leading-tight mt-1">
+          <Link to="/series/curated/$list" params={{ list: "turkish_classics" }} className="flex items-center gap-2">
+            <span
+              className="relative w-12 h-12 rounded-2xl grid place-items-center shrink-0"
+              style={{
+                background:
+                  "linear-gradient(150deg, color-mix(in oklab, var(--flag) 85%, white), var(--flag) 55%, color-mix(in oklab, var(--flag) 75%, black))",
+                boxShadow:
+                  "0 8px 18px -8px var(--flag), inset 0 1px 1px rgba(255,255,255,0.35), inset 0 -2px 5px rgba(0,0,0,0.3)",
+              }}
+            >
+              <svg viewBox="0 0 24 24" className="w-8 h-8 -mt-1" aria-hidden="true">
+                <circle cx="9.2" cy="12" r="5.4" fill="#fff" />
+                <circle cx="10.5" cy="12" r="4.4" fill="var(--flag)" />
+                <polygon
+                  points="14.2,12 15.93,11.36 16,9.53 17.13,10.97 18.9,10.47 17.88,12 18.9,13.53 17.13,13.03 16,14.47 15.93,12.64"
+                  fill="#fff"
+                />
+              </svg>
+              <span className="absolute bottom-0.5 inset-x-0 text-center text-[10px] font-extrabold text-white leading-none" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
+                20
+              </span>
+            </span>
+            <span className="text-[11px] text-muted-foreground leading-tight">
               Turkish<br />Classics
             </span>
           </Link>
           <h1 className="text-2xl font-bold tracking-tight pt-1">BingeBox</h1>
-          <Link to="/series/curated/$list" params={{ list: "top_rated_100k" }} className="relative w-16 h-12 block">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Heart className="w-12 h-12 fill-[var(--heart)] text-[var(--heart)]" strokeWidth={0} />
-            </div>
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-extrabold text-white pt-1">100</span>
+          <Link to="/series/curated/$list" params={{ list: "top_rated_100k" }} className="relative w-16 h-14 block">
+            <span
+              className="absolute inset-0 flex items-center justify-center"
+              style={{
+                filter:
+                  "drop-shadow(0 8px 14px color-mix(in oklab, var(--heart) 55%, transparent)) drop-shadow(0 2px 3px rgba(0,0,0,0.4))",
+              }}
+            >
+              <svg viewBox="0 0 24 24" className="w-14 h-14" aria-hidden="true">
+                <defs>
+                  <linearGradient id="bbHeartGrad" x1="0" y1="0" x2="0.35" y2="1">
+                    <stop offset="0%" style={{ stopColor: "var(--heart-hi)" }} />
+                    <stop offset="55%" style={{ stopColor: "var(--heart)" }} />
+                    <stop offset="100%" style={{ stopColor: "var(--heart-lo)" }} />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  fill="url(#bbHeartGrad)"
+                />
+                <path
+                  d="M5.7 6.4C4.5 7.1 3.8 8.3 3.9 9.6"
+                  stroke="rgba(255,255,255,0.6)"
+                  strokeWidth="1.1"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+            </span>
+            <span
+              className="absolute inset-0 flex items-center justify-center text-[11px] font-extrabold text-white pt-0.5"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.55)" }}
+            >
+              100
+            </span>
             <span className="absolute -top-1 -left-1 text-[var(--gold)] text-[10px]">★</span>
             <span className="absolute -top-2 right-0 text-[var(--gold)] text-[10px]">★</span>
             <span className="absolute top-1 -right-2 text-[var(--gold)] text-xs">★</span>
@@ -233,20 +278,6 @@ export function HomeScreen() {
       {top === "series" && (
         <div className="space-y-7 mt-5">
           <PosterRow
-            title="Top 250 Series (IMDb)"
-            shows={top250Shows}
-            showRating
-            seeAllTo="/series/curated/imdb_top_250"
-            accent={
-              top250Q.isLoading ? (
-                <span className="text-xs text-muted-foreground">Loading…</span>
-              ) : top250Q.isError ? (
-                <span className="text-xs text-destructive">Error</span>
-              ) : null
-            }
-          />
-          <PosterRow
-
             title="Top Rated Shows (100K+ Votes)"
             shows={topRatedShows}
             showRating
