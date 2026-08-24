@@ -1,11 +1,11 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { getImdbRatings } from "@/lib/imdb.functions";
 import { formatVotes } from "@/lib/format";
-import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
+import { resolveTmdbCategory } from "@/lib/browse-categories";
 
 function getUserLanguage() {
   if (typeof navigator === "undefined") return "en-US";
@@ -16,10 +16,10 @@ function getUserLanguage() {
 
 export const Route = createFileRoute("/_authenticated/series/$category")({
   beforeLoad: ({ params }) => {
-    if (!TMDB_CATEGORIES[params.category]) throw notFound();
+    if (!resolveTmdbCategory(params.category)) throw notFound();
   },
   head: ({ params }) => {
-    const cat = TMDB_CATEGORIES[params.category];
+    const cat = resolveTmdbCategory(params.category);
     const title = cat ? `${cat.title} — BingeBox` : "BingeBox";
     return {
       meta: [
@@ -51,8 +51,9 @@ type TmdbItem = {
 
 function CategoryPage() {
   const { category } = Route.useParams();
-  const cat = TMDB_CATEGORIES[category];
+  const cat = resolveTmdbCategory(category)!;
   const language = getUserLanguage();
+  const router = useRouter();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const query = useInfiniteQuery({
@@ -115,9 +116,13 @@ function CategoryPage() {
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
       <header className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link to="/" className="p-1 -ml-1 rounded-md hover:bg-muted">
+        <button
+          onClick={() => router.history.back()}
+          className="p-1 -ml-1 rounded-md hover:bg-muted"
+          aria-label="Geri"
+        >
           <ChevronLeft className="w-5 h-5" />
-        </Link>
+        </button>
         <h1 className="text-base font-bold tracking-tight">{cat.title}</h1>
       </header>
 

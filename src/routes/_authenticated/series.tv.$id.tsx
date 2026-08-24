@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
@@ -68,6 +68,7 @@ type Reviews = {
 function SeriesDetailPage() {
   const { id } = Route.useParams();
   const language = getUserLanguage();
+  const router = useRouter();
   const [trailerOpen, setTrailerOpen] = useState(false);
 
   const detailQ = useQuery({
@@ -120,9 +121,13 @@ function SeriesDetailPage() {
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Link to="/" className="p-1 -ml-1 rounded-md hover:bg-muted">
+        <button
+          onClick={() => router.history.back()}
+          className="p-1 -ml-1 rounded-md hover:bg-muted"
+          aria-label="Geri"
+        >
           <ChevronLeft className="w-5 h-5" />
-        </Link>
+        </button>
         <h1 className="text-base font-bold tracking-tight truncate">
           {detail?.name ?? "…"}
         </h1>
@@ -222,7 +227,12 @@ function SeriesDetailPage() {
               <h3 className="px-4 text-sm font-bold mb-3">Oyuncular</h3>
               <div className="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x">
                 {cast.map((c) => (
-                  <div key={c.id} className="shrink-0 w-20 snap-start">
+                  <Link
+                    key={c.id}
+                    to="/person/$id"
+                    params={{ id: String(c.id) }}
+                    className="shrink-0 w-20 snap-start"
+                  >
                     <div className="aspect-[2/3] rounded-lg overflow-hidden bg-card ring-1 ring-border">
                       {c.profile_path ? (
                         <img
@@ -243,7 +253,7 @@ function SeriesDetailPage() {
                     <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">
                       {c.character}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
