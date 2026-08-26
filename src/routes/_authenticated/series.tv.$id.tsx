@@ -89,14 +89,21 @@ function SeriesDetailPage() {
     staleTime: 1000 * 60 * 30,
   });
 
+  // Videos: always request en-US and allow every video language, otherwise
+  // localised requests (e.g. tr-TR) come back with an empty results array.
   const videosQ = useQuery({
-    queryKey: ["tmdb", "tv", id, "videos", language],
+    queryKey: ["tmdb", "tv", id, "videos"],
     queryFn: () =>
       getTvShows({
-        data: { endpoint: `/tv/${id}/videos`, language },
+        data: {
+          endpoint: `/tv/${id}/videos`,
+          language: "en-US",
+          params: { include_video_language: "en,null" },
+        },
       }) as Promise<unknown>,
     staleTime: 1000 * 60 * 30,
   });
+
 
   const reviewsQ = useQuery({
     queryKey: ["tmdb", "tv", id, "reviews", language],
