@@ -20,12 +20,14 @@ export type UserShow = {
   rating: number | null;
   notify: boolean;
   seasons_logged: number[];
+  episodes_logged: string[];
+  review: string | null;
   completed_at: string | null;
   updated_at: string;
 };
 
 const SELECT =
-  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, completed_at, updated_at";
+  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, completed_at, updated_at";
 
 export const USER_SHOWS_KEY = ["user_shows"] as const;
 
@@ -60,6 +62,25 @@ export type ShowMeta = {
   episode_runtime?: number | null;
 };
 
+/** Stable key for a single episode inside `episodes_logged`. */
+export const epKey = (season: number, episode: number) => `${season}x${episode}`;
+
+export function isEpisodeLogged(show: UserShow | undefined, season: number, episode: number) {
+  return !!show?.episodes_logged?.includes(epKey(season, episode));
+}
+
+export function isSeasonLogged(
+  show: UserShow | undefined,
+  season: number,
+  episodeCount: number,
+) {
+  if (!show || episodeCount <= 0) return false;
+  for (let e = 1; e <= episodeCount; e++) {
+    if (!show.episodes_logged?.includes(epKey(season, e))) return false;
+  }
+  return true;
+}
+
 async function currentUserId() {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("Not signed in");
@@ -85,43 +106,176 @@ async function save(row: Record<string, unknown>) {
   if (error) throw error;
 }
 
-/** Rating the whole show is the strongest signal: watched + 100% progress. */
-export async function rateShow(meta: ShowMeta, rating: number | null, watchedAt?: Date) {
-  await save({
+function base(meta: ShowMeta, prev: UserShow | null) {
+  return {
     tmdb_id: meta.tmdb_id,
     title: meta.title,
     poster_path: meta.poster_path,
-    total_episodes: meta.total_episodes,
-    episode_runtime: meta.episode_runtime ?? null,
-    rating,
-    status: "watched",
-    episodes_watched: meta.total_episodes ?? 0,
-    completed_at: (watchedAt ?? new Date()).toISOString(),
-  });
+    total_episodes: meta.total_episodes ?? prev?.total_episodes ?? null,
+    episode_runtime: meta.episode_runtime ?? prev?.episode_runtime ?? null,
+    rating: prev?.rating ?? null,
+    review: prev?.review ?? null,
+    notify: prev?.notify ?? false,
+  };
 }
 
-/** Mark the entire show as completed without a rating. */
-export async function logWholeShow(meta: ShowMeta, seasonCount: number, watchedAt?: Date) {
-  const prev = await existing(meta.tmdb_id);
-  await save({
-    tmdb_id: meta.tmdb_id,
-    title: meta.title,
-    poster_path: meta.poster_path,
-    total_episodes: meta.total_episodes,
-    episode_runtime: meta.episode_runtime ?? null,
-    rating: prev?.rating ?? null,
-    status: "watched",
-    episodes_watched: meta.total_episodes ?? 0,
-    seasons_logged: Array.from({ length: seasonCount }, (_, i) => i + 1),
-    completed_at: watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString(),
-  });
+/** Seasons whose every episode is present in `episodes_logged`. */
+function derivedSeasons(keys: string[], episodeCountBySeason: Record<number, number>) {
+  const out: number[] = [];
+  for (const [s, count] of Object.entries(episodeCountBySeason)) {
+    const season = Number(s);
+    if (count <= 0) continue;
+    let all = true;
+    for (let e = 1; e <= count; e++) {
+      if (!keys.includes(epKey(season, e))) {
+        all = false;
+        break;
+      }
+    }
+    if (all) out.push(season);
+  }
+  return out.sort((a, b) => a - b);
 }
 
 /**
- * Logging a season marks every episode of that season as watched.
- * Progress = sum of episodes across all logged seasons.
- * An overall rating already implies "watched" and is never downgraded.
+ * Persist an exact set of logged episodes. Status reflects real progress:
+ * only a complete run (or the explicit "whole series" mark) counts as watched.
  */
+async function persistEpisodes(
+  meta: ShowMeta,
+  keys: string[],
+  episodeCountBySeason: Record<number, number>,
+  watchedAt?: Date,
+) {
+  const prev = await existing(meta.tmdb_id);
+  const unique = Array.from(new Set(keys)).sort();
+  const total = meta.total_episodes ?? prev?.total_episodes ?? null;
+  const complete = total != null && total > 0 && unique.length >= total;
+  const status = unique.length === 0
+    ? prev?.status === "watchlist"
+      ? "watchlist"
+      : "watchlist"
+    : complete
+      ? "watched"
+      : "partly_watched";
+
+  await save({
+    ...base(meta, prev),
+    episodes_logged: unique,
+    seasons_logged: derivedSeasons(unique, episodeCountBySeason),
+    episodes_watched: unique.length,
+    status,
+    completed_at: complete
+      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      : null,
+  });
+}
+
+/** Toggle a single episode on/off (tap again to un-mark). */
+export async function toggleEpisode(
+  meta: ShowMeta,
+  season: number,
+  episode: number,
+  episodeCountBySeason: Record<number, number>,
+  watchedAt?: Date,
+) {
+  const prev = await existing(meta.tmdb_id);
+  const key = epKey(season, episode);
+  const current = prev?.episodes_logged ?? [];
+  const next = current.includes(key)
+    ? current.filter((k) => k !== key)
+    : [...current, key];
+  await persistEpisodes(meta, next, episodeCountBySeason, watchedAt);
+  return !current.includes(key);
+}
+
+/** Toggle an entire season on/off. */
+export async function toggleSeason(
+  meta: ShowMeta,
+  season: number,
+  episodeCountBySeason: Record<number, number>,
+  watchedAt?: Date,
+) {
+  const prev = await existing(meta.tmdb_id);
+  const count = episodeCountBySeason[season] ?? 0;
+  const current = prev?.episodes_logged ?? [];
+  const seasonKeys = Array.from({ length: count }, (_, i) => epKey(season, i + 1));
+  const all = count > 0 && seasonKeys.every((k) => current.includes(k));
+  const next = all
+    ? current.filter((k) => !seasonKeys.includes(k))
+    : [...current, ...seasonKeys];
+  await persistEpisodes(meta, next, episodeCountBySeason, watchedAt);
+  return !all;
+}
+
+/**
+ * Explicit "watched the entire series" mark, independent from episode logs.
+ * Turning it off falls back to whatever episodes are still logged.
+ */
+export async function setWholeSeries(
+  meta: ShowMeta,
+  on: boolean,
+  episodeCountBySeason: Record<number, number>,
+  watchedAt?: Date,
+) {
+  const prev = await existing(meta.tmdb_id);
+  if (on) {
+    const total = meta.total_episodes ?? prev?.total_episodes ?? 0;
+    await save({
+      ...base(meta, prev),
+      episodes_logged: prev?.episodes_logged ?? [],
+      seasons_logged: prev?.seasons_logged ?? [],
+      episodes_watched: total,
+      status: "watched",
+      completed_at:
+        watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString(),
+    });
+    return true;
+  }
+  await persistEpisodes(meta, prev?.episodes_logged ?? [], episodeCountBySeason, watchedAt);
+  return false;
+}
+
+/** Save the user's own rating. Rating alone never implies a full watch. */
+export async function rateShow(meta: ShowMeta, rating: number | null, watchedAt?: Date) {
+  const prev = await existing(meta.tmdb_id);
+  await save({
+    ...base(meta, prev),
+    rating,
+    episodes_logged: prev?.episodes_logged ?? [],
+    seasons_logged: prev?.seasons_logged ?? [],
+    episodes_watched: prev?.episodes_watched ?? 0,
+    status: prev?.status ?? "watchlist",
+    completed_at:
+      prev?.completed_at ?? (watchedAt ? watchedAt.toISOString() : null),
+  });
+}
+
+/** Save (or clear) the user's written review, optionally with a rating. */
+export async function saveReview(
+  meta: ShowMeta,
+  review: string | null,
+  rating?: number | null,
+) {
+  const prev = await existing(meta.tmdb_id);
+  await save({
+    ...base(meta, prev),
+    review: review && review.trim().length > 0 ? review.trim() : null,
+    rating: rating === undefined ? (prev?.rating ?? null) : rating,
+    episodes_logged: prev?.episodes_logged ?? [],
+    seasons_logged: prev?.seasons_logged ?? [],
+    episodes_watched: prev?.episodes_watched ?? 0,
+    status: prev?.status ?? "watchlist",
+    completed_at: prev?.completed_at ?? null,
+  });
+}
+
+/** Mark the entire show as completed (used by the quick log dialog). */
+export async function logWholeShow(meta: ShowMeta, _seasonCount: number, watchedAt?: Date) {
+  await setWholeSeries(meta, true, {}, watchedAt);
+}
+
+/** Log every episode of a season (additive; used by the quick log dialog). */
 export async function logSeason(
   meta: ShowMeta,
   season: number,
@@ -129,47 +283,27 @@ export async function logSeason(
   watchedAt?: Date,
 ) {
   const prev = await existing(meta.tmdb_id);
-  const seasons = Array.from(new Set([...(prev?.seasons_logged ?? []), season])).sort(
-    (a, b) => a - b,
-  );
-  const episodes = seasons.reduce((sum, s) => sum + (episodeCountBySeason[s] ?? 0), 0);
-  const rated = prev?.rating != null;
-  const total = meta.total_episodes ?? prev?.total_episodes ?? null;
-  const done = total != null && episodes >= total;
-  await save({
-    tmdb_id: meta.tmdb_id,
-    title: meta.title,
-    poster_path: meta.poster_path,
-    total_episodes: total,
-    episode_runtime: meta.episode_runtime ?? prev?.episode_runtime ?? null,
-    rating: prev?.rating ?? null,
-    seasons_logged: seasons,
-    episodes_watched: rated ? (total ?? episodes) : episodes,
-    status: rated || done ? "watched" : "partly_watched",
-    completed_at: rated || done
-      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
-      : null,
-  });
+  const count = episodeCountBySeason[season] ?? 0;
+  const keys = [
+    ...(prev?.episodes_logged ?? []),
+    ...Array.from({ length: count }, (_, i) => epKey(season, i + 1)),
+  ];
+  await persistEpisodes(meta, keys, episodeCountBySeason, watchedAt);
 }
 
-/** Log a single episode: bumps progress by one, keeps status at watching. */
+/** Log a single episode by count: bumps partial progress only. */
 export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
   const prev = await existing(meta.tmdb_id);
   const total = meta.total_episodes ?? prev?.total_episodes ?? null;
   const episodes = Math.min((prev?.episodes_watched ?? 0) + count, total ?? Infinity);
-  const rated = prev?.rating != null;
-  const done = total != null && episodes >= total;
+  const complete = total != null && episodes >= total;
   await save({
-    tmdb_id: meta.tmdb_id,
-    title: meta.title,
-    poster_path: meta.poster_path,
-    total_episodes: total,
-    episode_runtime: meta.episode_runtime ?? prev?.episode_runtime ?? null,
-    rating: prev?.rating ?? null,
+    ...base(meta, prev),
+    episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
-    episodes_watched: rated ? (total ?? episodes) : episodes,
-    status: rated || done ? "watched" : "watching",
-    completed_at: rated || done
+    episodes_watched: episodes,
+    status: complete ? "watched" : "partly_watched",
+    completed_at: complete
       ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
       : null,
   });
@@ -179,19 +313,16 @@ export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
 export async function setWatchlist(meta: ShowMeta, notify: boolean) {
   const prev = await existing(meta.tmdb_id);
   await save({
-    tmdb_id: meta.tmdb_id,
-    title: meta.title,
-    poster_path: meta.poster_path,
-    total_episodes: meta.total_episodes,
-    episode_runtime: meta.episode_runtime ?? prev?.episode_runtime ?? null,
-    rating: prev?.rating ?? null,
+    ...base(meta, prev),
+    notify,
+    episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
     episodes_watched: prev?.episodes_watched ?? 0,
     status:
       prev?.status === "watched" || prev?.status === "watching" || prev?.status === "partly_watched"
         ? prev.status
         : "watchlist",
-    notify,
+    completed_at: prev?.completed_at ?? null,
   });
 }
 
