@@ -163,11 +163,13 @@ export type Database = {
           completed_at: string | null
           created_at: string
           episode_runtime: number | null
+          episodes_logged: string[]
           episodes_watched: number
           id: string
           notify: boolean
           poster_path: string | null
           rating: number | null
+          review: string | null
           seasons_logged: number[]
           status: string
           title: string
@@ -180,11 +182,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           episode_runtime?: number | null
+          episodes_logged?: string[]
           episodes_watched?: number
           id?: string
           notify?: boolean
           poster_path?: string | null
           rating?: number | null
+          review?: string | null
           seasons_logged?: number[]
           status?: string
           title: string
@@ -197,11 +201,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           episode_runtime?: number | null
+          episodes_logged?: string[]
           episodes_watched?: number
           id?: string
           notify?: boolean
           poster_path?: string | null
           rating?: number | null
+          review?: string | null
           seasons_logged?: number[]
           status?: string
           title?: string
