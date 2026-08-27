@@ -119,9 +119,12 @@ function SeriesDetailPage() {
   const videos = videosQ.data as Videos | undefined;
   const reviews = (reviewsQ.data as Reviews | undefined)?.results ?? [];
 
-  const trailer = videos?.results?.find(
-    (v) => v.site === "YouTube" && v.type === "Trailer",
-  ) ?? videos?.results?.find((v) => v.site === "YouTube");
+  const youtube = (videos?.results ?? []).filter((v) => v.site === "YouTube" && v.key);
+  const trailer =
+    youtube.find((v) => v.type === "Trailer") ??
+    youtube.find((v) => v.type === "Teaser") ??
+    youtube[0];
+
 
   const cast = credits?.cast?.slice(0, 8) ?? [];
 
