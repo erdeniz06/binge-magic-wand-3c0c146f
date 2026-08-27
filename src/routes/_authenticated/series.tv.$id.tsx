@@ -216,8 +216,9 @@ function SeriesDetailPage() {
               total_episodes: detail.number_of_episodes ?? null,
               episode_runtime: (detail as { episode_run_time?: number[] }).episode_run_time?.[0] ?? null,
             }}
-            seasonCount={detail.number_of_seasons ?? 0}
+            seasons={detail.seasons ?? []}
           />
+
 
 
           {detail.overview && (
