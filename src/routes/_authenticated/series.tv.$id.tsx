@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { ShowTracking } from "@/components/bingebox/ShowTracking";
+import { ReviewEditor } from "@/components/bingebox/ReviewEditor";
+
 
 
 function getUserLanguage() {
