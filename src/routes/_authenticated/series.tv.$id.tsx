@@ -266,8 +266,17 @@ function SeriesDetailPage() {
             </section>
           )}
 
-          <section className="px-4 mt-6">
-            <h3 className="text-sm font-bold mb-3">Yorumlar</h3>
+          <section className="px-4 mt-6 space-y-3">
+            <h3 className="text-sm font-bold">Yorumlar</h3>
+            <ReviewEditor
+              meta={{
+                tmdb_id: detail.id,
+                title: detail.name,
+                poster_path: detail.poster_path,
+                total_episodes: detail.number_of_episodes ?? null,
+              }}
+            />
+
             {reviewsQ.isLoading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
