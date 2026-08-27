@@ -35,6 +35,8 @@ type TvDetail = {
   vote_average: number;
   vote_count: number;
   genres: { id: number; name: string }[];
+  seasons?: { season_number: number; episode_count: number; name?: string }[];
+
 };
 
 type Credits = {
