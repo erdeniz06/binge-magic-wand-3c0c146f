@@ -67,11 +67,16 @@ function CategoryPage() {
           params: { ...(cat.params ?? {}), page: pageParam },
         },
       }),
-    getNextPageParam: (last) => {
-      if (cat.limit) return undefined;
-      const page = last.page ?? 1;
+    getNextPageParam: (last, pages) => {
+      const page = last.page ?? pages.length;
       const total = last.total_pages ?? 1;
-      return page < total ? page + 1 : undefined;
+      if (page >= total) return undefined;
+      // Capped lists keep paging only until the cap is reached.
+      if (cat.limit) {
+        const loaded = pages.reduce((n, p) => n + (p.results?.length ?? 0), 0);
+        return loaded < cat.limit ? page + 1 : undefined;
+      }
+      return page + 1;
     },
     staleTime: 1000 * 60 * 30,
   });
@@ -91,13 +96,8 @@ function CategoryPage() {
     return () => io.disconnect();
   }, [query]);
 
-  const imdbQ = useQuery({
-    queryKey: ["imdb", "ratings"],
-    queryFn: () => getImdbRatings(),
-    staleTime: 1000 * 60 * 60 * 12,
-  });
-  const imdbMap = new Map((imdbQ.data ?? []).map((r) => [r.tmdb_id, r]));
-
+  // Ratings always come straight from TMDB so the same show shows the same
+  // number on every screen.
   const items: TmdbItem[] = (
     query.data?.pages.flatMap((p) => (p.results ?? []) as TmdbItem[]) ?? []
   )
@@ -106,11 +106,8 @@ function CategoryPage() {
         category !== "popular-this-week" ||
         !it.genre_ids?.some((g) => EXCLUDED_GENRES.has(g)),
     )
-    .slice(0, cat.limit ?? Number.POSITIVE_INFINITY)
-    .map((it) => {
-      const hit = imdbMap.get(it.id);
-      return hit ? { ...it, vote_average: hit.rating, vote_count: hit.votes } : it;
-    });
+    .slice(0, cat.limit ?? Number.POSITIVE_INFINITY);
+
 
 
   return (
