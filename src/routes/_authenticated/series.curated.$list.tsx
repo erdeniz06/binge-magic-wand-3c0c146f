@@ -54,7 +54,26 @@ function CuratedListPage() {
     staleTime: 1000 * 60 * 60,
   });
 
-  const providersQ = useWatchProviders((q.data ?? []).map((i) => i.tmdb_id));
+  const ids = (q.data ?? []).map((i) => i.tmdb_id);
+  const providersQ = useWatchProviders(ids);
+
+  // Ratings always come from TMDB so the same show shows the same number
+  // everywhere in the app.
+  const chunks: number[][] = [];
+  for (let i = 0; i < ids.length; i += 60) chunks.push(ids.slice(i, i + 60));
+  const ratingQs = useQueries({
+    queries: chunks.map((chunk) => ({
+      queryKey: ["tmdb", "ratings", chunk[0], chunk.length],
+      queryFn: () => getTmdbRatings({ data: { ids: chunk } }),
+      staleTime: 1000 * 60 * 60 * 12,
+    })),
+  });
+  const ratings: Record<string, { vote_average: number; vote_count: number }> = Object.assign(
+    {},
+    ...ratingQs.map((r) => r.data ?? {}),
+  );
+
+
 
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
