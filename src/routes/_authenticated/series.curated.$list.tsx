@@ -1,5 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { getTmdbRatings } from "@/lib/tmdb-ratings.functions";
+
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getCuratedList } from "@/lib/curated.functions";
 import { CURATED_LISTS } from "@/lib/curated-lists";
