@@ -116,18 +116,16 @@ function CuratedListPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{item.title}</p>
-                  {item.vote_average ? (
+                  {ratings[String(item.tmdb_id)] ? (
                     <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                       <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
                       <span className="font-semibold text-foreground">
-                        {item.vote_average.toFixed(1)}
+                        {ratings[String(item.tmdb_id)]!.vote_average.toFixed(1)}
                       </span>
-                      {item.vote_count ? (
-                        <span>({formatVotes(item.vote_count)} oy)</span>
-                      ) : null}
-
+                      <span>({formatVotes(ratings[String(item.tmdb_id)]!.vote_count)} oy)</span>
                     </p>
                   ) : null}
+
                   {item.network ? (
                     <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground truncate">
                       {item.network}
