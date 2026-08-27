@@ -1,5 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { getTmdbRatings } from "@/lib/tmdb-ratings.functions";
+
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getCuratedList } from "@/lib/curated.functions";
 import { CURATED_LISTS } from "@/lib/curated-lists";
@@ -54,7 +56,26 @@ function CuratedListPage() {
     staleTime: 1000 * 60 * 60,
   });
 
-  const providersQ = useWatchProviders((q.data ?? []).map((i) => i.tmdb_id));
+  const ids = (q.data ?? []).map((i) => i.tmdb_id);
+  const providersQ = useWatchProviders(ids);
+
+  // Ratings always come from TMDB so the same show shows the same number
+  // everywhere in the app.
+  const chunks: number[][] = [];
+  for (let i = 0; i < ids.length; i += 60) chunks.push(ids.slice(i, i + 60));
+  const ratingQs = useQueries({
+    queries: chunks.map((chunk) => ({
+      queryKey: ["tmdb", "ratings", chunk[0], chunk.length],
+      queryFn: () => getTmdbRatings({ data: { ids: chunk } }),
+      staleTime: 1000 * 60 * 60 * 12,
+    })),
+  });
+  const ratings: Record<string, { vote_average: number; vote_count: number }> = Object.assign(
+    {},
+    ...ratingQs.map((r) => r.data ?? {}),
+  );
+
+
 
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
@@ -97,18 +118,16 @@ function CuratedListPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{item.title}</p>
-                  {item.vote_average ? (
+                  {ratings[String(item.tmdb_id)] ? (
                     <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                       <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
                       <span className="font-semibold text-foreground">
-                        {item.vote_average.toFixed(1)}
+                        {ratings[String(item.tmdb_id)]!.vote_average.toFixed(1)}
                       </span>
-                      {item.vote_count ? (
-                        <span>({formatVotes(item.vote_count)} oy)</span>
-                      ) : null}
-
+                      <span>({formatVotes(ratings[String(item.tmdb_id)]!.vote_count)} oy)</span>
                     </p>
                   ) : null}
+
                   {item.network ? (
                     <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground truncate">
                       {item.network}

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { ShowTracking } from "@/components/bingebox/ShowTracking";
+import { ReviewEditor } from "@/components/bingebox/ReviewEditor";
+
 
 
 function getUserLanguage() {
@@ -35,6 +37,8 @@ type TvDetail = {
   vote_average: number;
   vote_count: number;
   genres: { id: number; name: string }[];
+  seasons?: { season_number: number; episode_count: number; name?: string }[];
+
 };
 
 type Credits = {
@@ -119,9 +123,12 @@ function SeriesDetailPage() {
   const videos = videosQ.data as Videos | undefined;
   const reviews = (reviewsQ.data as Reviews | undefined)?.results ?? [];
 
-  const trailer = videos?.results?.find(
-    (v) => v.site === "YouTube" && v.type === "Trailer",
-  ) ?? videos?.results?.find((v) => v.site === "YouTube");
+  const youtube = (videos?.results ?? []).filter((v) => v.site === "YouTube" && v.key);
+  const trailer =
+    youtube.find((v) => v.type === "Trailer") ??
+    youtube.find((v) => v.type === "Teaser") ??
+    youtube[0];
+
 
   const cast = credits?.cast?.slice(0, 8) ?? [];
 
@@ -216,8 +223,9 @@ function SeriesDetailPage() {
               total_episodes: detail.number_of_episodes ?? null,
               episode_runtime: (detail as { episode_run_time?: number[] }).episode_run_time?.[0] ?? null,
             }}
-            seasonCount={detail.number_of_seasons ?? 0}
+            seasons={detail.seasons ?? []}
           />
+
 
 
           {detail.overview && (
@@ -266,8 +274,17 @@ function SeriesDetailPage() {
             </section>
           )}
 
-          <section className="px-4 mt-6">
-            <h3 className="text-sm font-bold mb-3">Yorumlar</h3>
+          <section className="px-4 mt-6 space-y-3">
+            <h3 className="text-sm font-bold">Yorumlar</h3>
+            <ReviewEditor
+              meta={{
+                tmdb_id: detail.id,
+                title: detail.name,
+                poster_path: detail.poster_path,
+                total_episodes: detail.number_of_episodes ?? null,
+              }}
+            />
+
             {reviewsQ.isLoading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -297,16 +314,11 @@ function SeriesDetailPage() {
             ) : (
               <div className="rounded-xl bg-card ring-1 ring-border p-5 text-center">
                 <p className="text-xs text-muted-foreground">
-                  Henüz yorum yok, ilk yorumu sen yaz
+                  TMDB'de henüz yorum yok — yukarıdan kendi yorumunu yazabilirsin.
                 </p>
-                <button
-                  disabled
-                  className="mt-3 rounded-full bg-muted text-muted-foreground px-4 py-2 text-xs font-semibold opacity-60 cursor-not-allowed"
-                >
-                  Yorum Yaz
-                </button>
               </div>
             )}
+
           </section>
         </>
       )}
