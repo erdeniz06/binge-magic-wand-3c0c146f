@@ -297,16 +297,11 @@ function SeriesDetailPage() {
             ) : (
               <div className="rounded-xl bg-card ring-1 ring-border p-5 text-center">
                 <p className="text-xs text-muted-foreground">
-                  Henüz yorum yok, ilk yorumu sen yaz
+                  TMDB'de henüz yorum yok — yukarıdan kendi yorumunu yazabilirsin.
                 </p>
-                <button
-                  disabled
-                  className="mt-3 rounded-full bg-muted text-muted-foreground px-4 py-2 text-xs font-semibold opacity-60 cursor-not-allowed"
-                >
-                  Yorum Yaz
-                </button>
               </div>
             )}
+
           </section>
         </>
       )}
