@@ -239,6 +239,7 @@ export function ShowTracking({
                       busy={busy}
                       run={run}
                       logged={(ep) => isEpisodeLogged(tracked, s.season_number, ep)}
+                      watchedAt={watchedAt}
                     />
                   )}
                 </div>
