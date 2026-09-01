@@ -23,7 +23,7 @@ export function ProfileScreen() {
   const [name, setName] = useState("Your Name");
   const [handle, setHandle] = useState("username");
   const [memberSince, setMemberSince] = useState<string | null>(null);
-  const [shows, setShows] = useState<UserShow[] | null>(null);
+  const { data: shows } = useUserShows();
   const [tab, setTab] = useState<StatusTab>("watched");
 
   useEffect(() => {
