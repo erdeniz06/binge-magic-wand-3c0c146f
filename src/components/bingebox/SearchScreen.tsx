@@ -198,11 +198,13 @@ export function SearchScreen() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {isPerson
-                        ? (r.known_for_department ?? "Oyuncu")
-                        : `${r.first_air_date?.slice(0, 4) || "—"} · Dizi`}
-                    </p>
+                    {isPerson ? (
+                      <p className="text-xs text-muted-foreground">
+                        {r.known_for_department ?? "Oyuncu"}
+                      </p>
+                    ) : (
+                      <SeriesMetaLines id={r.id} language={language} />
+                    )}
                   </div>
                 </button>
               );
