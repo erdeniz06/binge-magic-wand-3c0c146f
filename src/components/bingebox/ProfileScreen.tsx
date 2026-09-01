@@ -3,18 +3,8 @@ import { Settings, LogOut, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { useUserShows, type UserShow } from "@/lib/user-shows";
 
-type UserShow = {
-  tmdb_id: number;
-  title: string;
-  poster_path: string | null;
-  status: string;
-  episodes_watched: number;
-  episode_runtime: number | null;
-  rating: number | null;
-  completed_at: string | null;
-  updated_at: string;
-};
 
 const DEFAULT_RUNTIME = 45;
 const TMDB_IMG = "https://image.tmdb.org/t/p/w200";
@@ -33,7 +23,7 @@ export function ProfileScreen() {
   const [name, setName] = useState("Your Name");
   const [handle, setHandle] = useState("username");
   const [memberSince, setMemberSince] = useState<string | null>(null);
-  const [shows, setShows] = useState<UserShow[] | null>(null);
+  const { data: shows } = useUserShows();
   const [tab, setTab] = useState<StatusTab>("watched");
 
   useEffect(() => {
@@ -54,20 +44,8 @@ export function ProfileScreen() {
     });
   }, []);
 
-  useEffect(() => {
-    let alive = true;
-    supabase
-      .from("user_shows")
-      .select(
-        "tmdb_id, title, poster_path, status, episodes_watched, episode_runtime, rating, completed_at, updated_at",
-      )
-      .then(({ data }) => {
-        if (alive) setShows((data ?? []) as UserShow[]);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+
+
 
   const stats = useMemo(() => {
     const rows = shows ?? [];
