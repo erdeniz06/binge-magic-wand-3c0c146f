@@ -116,9 +116,9 @@ export function ProfileScreen() {
   const favorites = useMemo(
     () =>
       (shows ?? [])
-        .filter((r) => r.poster_path && (r.rating ?? 0) >= 8)
-        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-        .slice(0, 10),
+        .filter((r) => r.favorite)
+        .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))
+        .slice(0, 20),
     [shows],
   );
 
@@ -282,7 +282,7 @@ export function ProfileScreen() {
         <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Favorites</h2>
         {favorites.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            8+ puan verdiğin diziler burada görünecek.
+            Dizi sayfasından “Favorilere ekle”ye bastığın diziler burada görünecek.
           </p>
         ) : (
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar">

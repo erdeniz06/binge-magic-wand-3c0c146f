@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Heart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -8,6 +8,7 @@ import {
   isSeasonLogged,
   rateShow,
   setNotify,
+  setFavorite,
   setWatchlist,
   setWholeSeries,
   toggleEpisode,
@@ -62,6 +63,7 @@ export function ShowTracking({
 
   const inWatchlist = tracked?.status === "watchlist";
   const isWatched = tracked?.status === "watched";
+  const isFavorite = !!tracked?.favorite;
 
   return (
     <section className="px-4 mt-5 space-y-3">
@@ -101,6 +103,25 @@ export function ShowTracking({
           Tüm diziyi izledim
         </button>
       </div>
+
+      <button
+        disabled={busy}
+        onClick={() =>
+          run(
+            async () => {
+              await setFavorite(meta, !isFavorite);
+            },
+            isFavorite ? "Favorilerden çıkarıldı" : "Favorilere eklendi",
+          )
+        }
+        className={cn(
+          "w-full flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition disabled:opacity-50",
+          isFavorite ? "bg-[var(--classic,#e11d48)] text-background" : "bg-card ring-1 ring-border",
+        )}
+      >
+        <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+        {isFavorite ? "Favorilerimde" : "Favorilere ekle"}
+      </button>
 
       {tracked && (
         <button
