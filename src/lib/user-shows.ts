@@ -22,12 +22,13 @@ export type UserShow = {
   seasons_logged: number[];
   episodes_logged: string[];
   review: string | null;
+  favorite: boolean;
   completed_at: string | null;
   updated_at: string;
 };
 
 const SELECT =
-  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, completed_at, updated_at";
+  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, completed_at, updated_at";
 
 export const USER_SHOWS_KEY = ["user_shows"] as const;
 
@@ -116,6 +117,7 @@ function base(meta: ShowMeta, prev: UserShow | null) {
     rating: prev?.rating ?? null,
     review: prev?.review ?? null,
     notify: prev?.notify ?? false,
+    favorite: prev?.favorite ?? false,
   };
 }
 
@@ -324,6 +326,21 @@ export async function setWatchlist(meta: ShowMeta, notify: boolean) {
         : "watchlist",
     completed_at: prev?.completed_at ?? null,
   });
+}
+
+/** User-controlled favorite flag. Never inferred from ratings. */
+export async function setFavorite(meta: ShowMeta, favorite: boolean) {
+  const prev = await existing(meta.tmdb_id);
+  await save({
+    ...base(meta, prev),
+    favorite,
+    episodes_logged: prev?.episodes_logged ?? [],
+    seasons_logged: prev?.seasons_logged ?? [],
+    episodes_watched: prev?.episodes_watched ?? 0,
+    status: prev?.status ?? "watchlist",
+    completed_at: prev?.completed_at ?? null,
+  });
+  return favorite;
 }
 
 export async function removeShow(tmdbId: number) {
