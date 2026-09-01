@@ -3,18 +3,8 @@ import { Settings, LogOut, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { useUserShows, type UserShow } from "@/lib/user-shows";
 
-type UserShow = {
-  tmdb_id: number;
-  title: string;
-  poster_path: string | null;
-  status: string;
-  episodes_watched: number;
-  episode_runtime: number | null;
-  rating: number | null;
-  completed_at: string | null;
-  updated_at: string;
-};
 
 const DEFAULT_RUNTIME = 45;
 const TMDB_IMG = "https://image.tmdb.org/t/p/w200";
