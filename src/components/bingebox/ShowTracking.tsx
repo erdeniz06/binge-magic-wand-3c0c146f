@@ -310,10 +310,12 @@ function SeasonEpisodes({
   busy,
   run,
   logged,
+  watchedAt,
 }: {
   meta: ShowMeta;
   season: number;
   episodeCountBySeason: Record<number, number>;
+  watchedAt: Date;
   busy: boolean;
   run: (fn: () => Promise<void>, message: string) => Promise<void>;
   logged: (episode: number) => boolean;
