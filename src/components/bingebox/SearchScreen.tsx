@@ -48,6 +48,52 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 const chipClass =
   "inline-flex items-center gap-1.5 rounded-full border border-border bg-card hover:bg-accent transition px-3.5 py-1.5 text-xs font-medium";
 
+type TvMeta = {
+  first_air_date?: string;
+  last_air_date?: string | null;
+  status?: string;
+  genres?: { id: number; name: string }[];
+  credits?: { cast?: { id: number; name: string }[] };
+};
+
+/** Genre, aired-year range and lead cast for a single search hit. */
+function SeriesMetaLines({ id, language }: { id: number; language: string }) {
+  const q = useQuery({
+    queryKey: ["tmdb", "tv-meta", id, language],
+    queryFn: () =>
+      getTvShows({
+        data: {
+          endpoint: `/tv/${id}`,
+          language,
+          params: { append_to_response: "credits" },
+        },
+      }) as Promise<unknown> as Promise<TvMeta>,
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const d = q.data;
+  const start = d?.first_air_date?.slice(0, 4);
+  const end = d?.last_air_date?.slice(0, 4);
+  const ongoing = d?.status === "Returning Series" || d?.status === "In Production";
+  const years = start ? (ongoing ? `${start}–` : end && end !== start ? `${start}–${end}` : start) : "—";
+  const genres = (d?.genres ?? []).slice(0, 3).map((g) => g.name).join(", ");
+  const cast = (d?.credits?.cast ?? []).slice(0, 3).map((c) => c.name).join(", ");
+
+  if (q.isLoading) {
+    return <p className="text-xs text-muted-foreground">Yükleniyor…</p>;
+  }
+
+  return (
+    <>
+      <p className="text-xs text-muted-foreground truncate">
+        Dizi · {years}
+        {genres ? ` · ${genres}` : ""}
+      </p>
+      {cast && <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">{cast}</p>}
+    </>
+  );
+}
+
 export function SearchScreen() {
   const navigate = useNavigate();
   const language = getUserLanguage();
@@ -152,11 +198,13 @@ export function SearchScreen() {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {isPerson
-                        ? (r.known_for_department ?? "Oyuncu")
-                        : `${r.first_air_date?.slice(0, 4) || "—"} · Dizi`}
-                    </p>
+                    {isPerson ? (
+                      <p className="text-xs text-muted-foreground">
+                        {r.known_for_department ?? "Oyuncu"}
+                      </p>
+                    ) : (
+                      <SeriesMetaLines id={r.id} language={language} />
+                    )}
                   </div>
                 </button>
               );

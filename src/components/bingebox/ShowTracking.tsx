@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Heart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -8,6 +8,7 @@ import {
   isSeasonLogged,
   rateShow,
   setNotify,
+  setFavorite,
   setWatchlist,
   setWholeSeries,
   toggleEpisode,
@@ -34,6 +35,10 @@ export function ShowTracking({
   const tracked = map.get(meta.tmdb_id);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const currentYear = new Date().getFullYear();
+  const [watchedYear, setWatchedYear] = useState<number>(currentYear);
+  const watchedAt =
+    watchedYear === currentYear ? new Date() : new Date(Date.UTC(watchedYear, 5, 15, 12));
   const providersQ = useWatchProviders([meta.tmdb_id]);
   const provider = providersQ.data?.[String(meta.tmdb_id)];
 
@@ -62,9 +67,32 @@ export function ShowTracking({
 
   const inWatchlist = tracked?.status === "watchlist";
   const isWatched = tracked?.status === "watched";
+  const isFavorite = !!tracked?.favorite;
 
   return (
     <section className="px-4 mt-5 space-y-3">
+      <div className="space-y-2">
+        <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
+          Hangi yıl izledin?
+        </p>
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+          {Array.from({ length: 10 }, (_, i) => currentYear - i).map((y) => (
+            <button
+              key={y}
+              onClick={() => setWatchedYear(y)}
+              className={cn(
+                "shrink-0 h-9 px-3 rounded-lg text-xs font-semibold transition",
+                watchedYear === y
+                  ? "bg-foreground text-background"
+                  : "bg-card ring-1 ring-border hover:bg-accent",
+              )}
+            >
+              {y === currentYear ? `${y} (bu yıl)` : y}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex gap-2">
         <button
           disabled={busy}
@@ -87,7 +115,7 @@ export function ShowTracking({
           onClick={() =>
             run(
               async () => {
-                await setWholeSeries(meta, !isWatched, episodeCountBySeason);
+                await setWholeSeries(meta, !isWatched, episodeCountBySeason, watchedAt);
               },
               isWatched ? "Tüm dizi işareti kaldırıldı" : "Tüm diziyi izledin olarak işaretlendi",
             )
@@ -101,6 +129,25 @@ export function ShowTracking({
           Tüm diziyi izledim
         </button>
       </div>
+
+      <button
+        disabled={busy}
+        onClick={() =>
+          run(
+            async () => {
+              await setFavorite(meta, !isFavorite);
+            },
+            isFavorite ? "Favorilerden çıkarıldı" : "Favorilere eklendi",
+          )
+        }
+        className={cn(
+          "w-full flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold transition disabled:opacity-50",
+          isFavorite ? "bg-[var(--classic,#e11d48)] text-background" : "bg-card ring-1 ring-border",
+        )}
+      >
+        <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+        {isFavorite ? "Favorilerimde" : "Favorilere ekle"}
+      </button>
 
       {tracked && (
         <button
@@ -150,7 +197,7 @@ export function ShowTracking({
                       onClick={() =>
                         run(
                           async () => {
-                            await toggleSeason(meta, s.season_number, episodeCountBySeason);
+                            await toggleSeason(meta, s.season_number, episodeCountBySeason, watchedAt);
                           },
                           done
                             ? `S${s.season_number} işareti kaldırıldı`
@@ -192,6 +239,7 @@ export function ShowTracking({
                       busy={busy}
                       run={run}
                       logged={(ep) => isEpisodeLogged(tracked, s.season_number, ep)}
+                      watchedAt={watchedAt}
                     />
                   )}
                 </div>
@@ -263,10 +311,12 @@ function SeasonEpisodes({
   busy,
   run,
   logged,
+  watchedAt,
 }: {
   meta: ShowMeta;
   season: number;
   episodeCountBySeason: Record<number, number>;
+  watchedAt: Date;
   busy: boolean;
   run: (fn: () => Promise<void>, message: string) => Promise<void>;
   logged: (episode: number) => boolean;
@@ -304,7 +354,7 @@ function SeasonEpisodes({
               onClick={() =>
                 run(
                   async () => {
-                    await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason);
+                    await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason, watchedAt);
                   },
                   done
                     ? `S${season}E${ep.episode_number} işareti kaldırıldı`

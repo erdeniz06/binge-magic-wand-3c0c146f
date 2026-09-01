@@ -1,0 +1,1 @@
+ALTER TABLE public.user_shows ADD COLUMN IF NOT EXISTS favorite boolean NOT NULL DEFAULT false;

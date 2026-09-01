@@ -128,9 +128,17 @@ export function LogActivityDialog({
 
   const submit = async () => {
     if (!meta || !mode) return;
+    if (mode !== "watchlist" && watchedYear == null) {
+      toast.error("Hangi yıl izlediğini seç");
+      return;
+    }
     setSaving(true);
     const watchedAt =
-      watchedYear != null ? new Date(Date.UTC(watchedYear, 5, 15, 12)) : undefined;
+      mode === "watchlist"
+        ? undefined
+        : watchedYear === currentYear
+          ? new Date()
+          : new Date(Date.UTC(watchedYear!, 5, 15, 12));
     try {
       if (mode === "watchlist") {
         await setWatchlist(meta, notify);
@@ -400,20 +408,9 @@ export function LogActivityDialog({
                   {mode !== "watchlist" && (
                     <div className="space-y-2">
                       <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-                        Ne zaman izledin?
+                        Hangi yıl izledin? (zorunlu)
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        <button
-                          onClick={() => setWatchedYear(null)}
-                          className={cn(
-                            "h-9 px-3 rounded-lg border text-xs font-semibold transition",
-                            watchedYear === null
-                              ? "bg-foreground text-background border-foreground"
-                              : "bg-card border-border hover:bg-accent",
-                          )}
-                        >
-                          Şimdi
-                        </button>
                         {yearOptions.map((y) => (
                           <button
                             key={y}
@@ -425,7 +422,7 @@ export function LogActivityDialog({
                                 : "bg-card border-border hover:bg-accent",
                             )}
                           >
-                            {y}
+                            {y === currentYear ? `${y} (bu yıl)` : y}
                           </button>
                         ))}
                       </div>
@@ -437,7 +434,11 @@ export function LogActivityDialog({
 
                   <button
                     onClick={submit}
-                    disabled={saving || (mode === "season" && seasonSel.length === 0)}
+                    disabled={
+                      saving ||
+                      (mode === "season" && seasonSel.length === 0) ||
+                      (mode !== "watchlist" && watchedYear == null)
+                    }
                     className="w-full rounded-full bg-foreground text-background py-3 text-sm font-semibold disabled:opacity-50"
                   >
                     {saving ? "Kaydediliyor…" : "Kaydet"}

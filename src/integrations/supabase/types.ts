@@ -165,6 +165,7 @@ export type Database = {
           episode_runtime: number | null
           episodes_logged: string[]
           episodes_watched: number
+          favorite: boolean
           id: string
           notify: boolean
           poster_path: string | null
@@ -184,6 +185,7 @@ export type Database = {
           episode_runtime?: number | null
           episodes_logged?: string[]
           episodes_watched?: number
+          favorite?: boolean
           id?: string
           notify?: boolean
           poster_path?: string | null
@@ -203,6 +205,7 @@ export type Database = {
           episode_runtime?: number | null
           episodes_logged?: string[]
           episodes_watched?: number
+          favorite?: boolean
           id?: string
           notify?: boolean
           poster_path?: string | null
