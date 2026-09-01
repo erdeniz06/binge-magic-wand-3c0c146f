@@ -351,7 +351,7 @@ function SeasonEpisodes({
               onClick={() =>
                 run(
                   async () => {
-                    await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason);
+                    await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason, watchedAt);
                   },
                   done
                     ? `S${season}E${ep.episode_number} işareti kaldırıldı`
