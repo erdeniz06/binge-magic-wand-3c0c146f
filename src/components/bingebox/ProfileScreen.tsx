@@ -44,20 +44,8 @@ export function ProfileScreen() {
     });
   }, []);
 
-  useEffect(() => {
-    let alive = true;
-    supabase
-      .from("user_shows")
-      .select(
-        "tmdb_id, title, poster_path, status, episodes_watched, episode_runtime, rating, completed_at, updated_at",
-      )
-      .then(({ data }) => {
-        if (alive) setShows((data ?? []) as UserShow[]);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+
+
 
   const stats = useMemo(() => {
     const rows = shows ?? [];
