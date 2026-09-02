@@ -1,8 +1,10 @@
-import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { QuickShowSheet, UserShowChip } from "@/components/bingebox/QuickShowSheet";
+import type { ShowMeta } from "@/lib/user-shows";
 
 import { formatVotes } from "@/lib/format";
 import { resolveTmdbCategory } from "@/lib/browse-categories";
