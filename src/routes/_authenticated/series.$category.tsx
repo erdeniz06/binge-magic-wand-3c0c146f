@@ -57,6 +57,7 @@ function CategoryPage() {
   const language = getUserLanguage();
   const router = useRouter();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [quick, setQuick] = useState<ShowMeta | null>(null);
 
   const query = useInfiniteQuery({
     queryKey: ["tmdb", "category", category, language],
