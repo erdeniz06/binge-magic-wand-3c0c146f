@@ -1,5 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQueries, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { QuickShowSheet, UserShowChip } from "@/components/bingebox/QuickShowSheet";
+import type { ShowMeta } from "@/lib/user-shows";
 import { getTmdbRatings } from "@/lib/tmdb-ratings.functions";
 
 import { ChevronLeft, Loader2, Star } from "lucide-react";
@@ -162,6 +165,8 @@ function CuratedListPage() {
       {!q.isLoading && (q.data?.length ?? 0) > 0 && (
         <p className="text-center text-xs text-muted-foreground py-6">Hepsi bu kadar 🎬</p>
       )}
+
+      <QuickShowSheet meta={quick} open={!!quick} onOpenChange={(o) => !o && setQuick(null)} />
     </div>
   );
 }

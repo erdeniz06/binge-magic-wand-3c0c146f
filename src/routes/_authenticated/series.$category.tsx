@@ -201,6 +201,8 @@ function CategoryPage() {
       {!query.isLoading && !query.hasNextPage && items.length > 0 && (
         <p className="text-center text-xs text-muted-foreground py-6">Hepsi bu kadar 🎬</p>
       )}
+
+      <QuickShowSheet meta={quick} open={!!quick} onOpenChange={(o) => !o && setQuick(null)} />
     </div>
   );
 }
