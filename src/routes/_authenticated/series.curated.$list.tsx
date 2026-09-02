@@ -58,6 +58,7 @@ function CuratedListPage() {
 
   const ids = (q.data ?? []).map((i) => i.tmdb_id);
   const providersQ = useWatchProviders(ids);
+  const [quick, setQuick] = useState<ShowMeta | null>(null);
 
   // Ratings always come from TMDB so the same show shows the same number
   // everywhere in the app.
