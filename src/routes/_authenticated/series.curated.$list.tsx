@@ -98,11 +98,11 @@ function CuratedListPage() {
       ) : (
         <ol className="divide-y divide-border">
           {(q.data ?? []).map((item) => (
-            <li key={item.rank}>
+            <li key={item.rank} className="flex items-center gap-2 pr-3">
               <Link
                 to="/series/tv/$id"
                 params={{ id: String(item.tmdb_id) }}
-                className="flex items-center gap-3 px-4 py-3"
+                className="flex flex-1 min-w-0 items-center gap-3 px-4 py-3"
               >
                 <span className="w-6 text-right text-xs font-bold text-muted-foreground">
                   {item.rank}
@@ -134,13 +134,26 @@ function CuratedListPage() {
                       {item.network}
                     </p>
                   ) : null}
+                  <UserShowChip tmdbId={item.tmdb_id} />
                 </div>
 
                 {providersQ.data?.[String(item.tmdb_id)] ? (
                   <ProviderBadge provider={providersQ.data[String(item.tmdb_id)]!} size={26} />
                 ) : null}
-                <span className="text-muted-foreground text-lg">›</span>
               </Link>
+              <button
+                onClick={() =>
+                  setQuick({
+                    tmdb_id: item.tmdb_id,
+                    title: item.title,
+                    poster_path: item.poster_path,
+                    total_episodes: null,
+                  })
+                }
+                className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ring-1 ring-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                Puanla
+              </button>
             </li>
           ))}
         </ol>
