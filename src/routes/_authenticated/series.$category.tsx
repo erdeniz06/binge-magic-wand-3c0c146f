@@ -1,8 +1,10 @@
-import { createFileRoute, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Loader2, Star } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { QuickShowSheet, UserShowChip } from "@/components/bingebox/QuickShowSheet";
+import type { ShowMeta } from "@/lib/user-shows";
 
 import { formatVotes } from "@/lib/format";
 import { resolveTmdbCategory } from "@/lib/browse-categories";
@@ -55,6 +57,7 @@ function CategoryPage() {
   const language = getUserLanguage();
   const router = useRouter();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [quick, setQuick] = useState<ShowMeta | null>(null);
 
   const query = useInfiniteQuery({
     queryKey: ["tmdb", "category", category, language],
@@ -138,30 +141,50 @@ function CategoryPage() {
               <span className="w-6 pt-6 text-right text-xs font-bold text-muted-foreground">
                 {idx + 1}
               </span>
-              <div className="w-16 shrink-0 aspect-[2/3] rounded-md overflow-hidden bg-card ring-1 ring-border">
-                {item.poster_path && (
-                  <img
-                    src={`${TMDB_IMAGE_BASE}${item.poster_path}`}
-                    alt={item.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{item.name}</p>
-                <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <span>{item.first_air_date?.slice(0, 4) || "—"}</span>
-                  <span className="flex items-center gap-0.5">
-                    <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
-                    {item.vote_average?.toFixed(1) ?? "—"}
-                  </span>
-                  <span>· {formatVotes(item.vote_count)} oy</span>
+              <Link
+                to="/series/tv/$id"
+                params={{ id: String(item.id) }}
+                className="flex flex-1 min-w-0 gap-3"
+              >
+                <div className="w-16 shrink-0 aspect-[2/3] rounded-md overflow-hidden bg-card ring-1 ring-border">
+                  {item.poster_path && (
+                    <img
+                      src={`${TMDB_IMAGE_BASE}${item.poster_path}`}
+                      alt={item.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
-                  {item.overview || "Açıklama yok."}
-                </p>
-              </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{item.name}</p>
+                  <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span>{item.first_air_date?.slice(0, 4) || "—"}</span>
+                    <span className="flex items-center gap-0.5">
+                      <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
+                      {item.vote_average?.toFixed(1) ?? "—"}
+                    </span>
+                    <span>· {formatVotes(item.vote_count)} oy</span>
+                  </div>
+                  <UserShowChip tmdbId={item.id} />
+                  <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
+                    {item.overview || "Açıklama yok."}
+                  </p>
+                </div>
+              </Link>
+              <button
+                onClick={() =>
+                  setQuick({
+                    tmdb_id: item.id,
+                    title: item.name,
+                    poster_path: item.poster_path,
+                    total_episodes: null,
+                  })
+                }
+                className="self-start shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ring-1 ring-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                Puanla
+              </button>
             </li>
           ))}
         </ol>
@@ -178,6 +201,8 @@ function CategoryPage() {
       {!query.isLoading && !query.hasNextPage && items.length > 0 && (
         <p className="text-center text-xs text-muted-foreground py-6">Hepsi bu kadar 🎬</p>
       )}
+
+      <QuickShowSheet meta={quick} open={!!quick} onOpenChange={(o) => !o && setQuick(null)} />
     </div>
   );
 }

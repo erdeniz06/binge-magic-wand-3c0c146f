@@ -158,6 +158,12 @@ export function PosterCard({
 
         {provider ? <ProviderBadge provider={provider} size={24} /> : null}
       </div>
+      {tracked?.rating ? (
+        <span className="mt-1 inline-flex items-center gap-0.5 rounded-full bg-[var(--gold)]/15 px-1.5 py-0.5 text-[10px] font-bold text-[var(--gold)]">
+          <Star className="w-2.5 h-2.5 fill-current" />
+          {tracked.rating}/10
+        </span>
+      ) : null}
       {tracked ? (
         <WatchProgress
           status={tracked.status}
