@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Heart, Loader2, Star, Trash2 } from "lucide-react";
+import { Heart, Loader2, Star, Trash2, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import {
   rateShow,
   removeShow,
+  setDropped,
+  setEpisodeCount,
   setFavorite,
   setWatchlist,
   setWholeSeries,
@@ -65,6 +67,7 @@ export function QuickShowSheet({
 
   const isWatched = tracked?.status === "watched";
   const inWatchlist = tracked?.status === "watchlist";
+  const isDropped = tracked?.status === "dropped";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -259,7 +262,9 @@ export function UserShowChip({ tmdbId }: { tmdbId: number }) {
   const label =
     s.status === "watched"
       ? "İzledim"
-      : s.status === "partly_watched" || s.status === "watching"
+      : s.status === "dropped"
+        ? `Bıraktım · ${s.episodes_watched} bölüm`
+        : s.status === "partly_watched" || s.status === "watching"
         ? `${s.episodes_watched} bölüm`
         : s.status === "watchlist"
           ? "Listemde"
