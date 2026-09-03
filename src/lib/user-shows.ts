@@ -258,6 +258,7 @@ export async function saveReview(
   meta: ShowMeta,
   review: string | null,
   rating?: number | null,
+  period?: WatchPeriod,
 ) {
   const prev = await existing(meta.tmdb_id);
   await save({
