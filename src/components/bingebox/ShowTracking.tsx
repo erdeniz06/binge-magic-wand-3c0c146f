@@ -1,21 +1,23 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Heart, Loader2 } from "lucide-react";
+import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Heart, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   isEpisodeLogged,
   isSeasonLogged,
   rateShow,
-  setNotify,
+  setDropped,
+  setEpisodeCount,
   setFavorite,
+  setNotify,
   setWatchlist,
   setWholeSeries,
   toggleEpisode,
   toggleSeason,
+  type ShowMeta,
   useInvalidateUserShows,
   useUserShowMap,
-  type ShowMeta,
 } from "@/lib/user-shows";
 import { getTvShows } from "@/lib/tmdb.functions";
 import { useWatchProviders, PROVIDER_LOGO_BASE } from "@/lib/use-watch-providers";
@@ -65,6 +67,7 @@ export function ShowTracking({
     }
   };
 
+  const isDropped = tracked?.status === "dropped";
   const inWatchlist = tracked?.status === "watchlist";
   const isWatched = tracked?.status === "watched";
   const isFavorite = !!tracked?.favorite;
@@ -129,6 +132,56 @@ export function ShowTracking({
           Tüm diziyi izledim
         </button>
       </div>
+
+      <div className="space-y-1.5">
+        <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
+          Sadece birkaç bölüm
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {[1, 2, 3, 5, 10].map((n) => (
+            <button
+              key={n}
+              disabled={busy}
+              onClick={() =>
+                run(
+                  () => setEpisodeCount(meta, n, watchedAt),
+                  `${n} bölüm izledin olarak kaydedildi`,
+                )
+              }
+              className={cn(
+                "rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition disabled:opacity-50",
+                !isWatched && tracked?.episodes_watched === n
+                  ? "bg-foreground text-background ring-transparent"
+                  : "bg-card ring-border text-muted-foreground",
+              )}
+            >
+              {n} bölüm
+            </button>
+          ))}
+          <button
+            disabled={busy}
+            onClick={() =>
+              run(
+                async () => {
+                  await setDropped(meta, !isDropped, watchedAt);
+                },
+                isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
+              )
+            }
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition disabled:opacity-50",
+              isDropped
+                ? "bg-destructive text-destructive-foreground ring-transparent"
+                : "bg-card ring-border text-muted-foreground",
+            )}
+          >
+            <XCircle className="w-3.5 h-3.5" />
+            {isDropped ? "Bıraktım ✓" : "Bıraktım"}
+          </button>
+        </div>
+      </div>
+
+
 
       <button
         disabled={busy}

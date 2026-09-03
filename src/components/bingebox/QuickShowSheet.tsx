@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Heart, Loader2, Star, Trash2 } from "lucide-react";
+import { Heart, Loader2, Star, Trash2, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import {
   rateShow,
   removeShow,
+  setDropped,
+  setEpisodeCount,
   setFavorite,
   setWatchlist,
   setWholeSeries,
@@ -65,6 +67,7 @@ export function QuickShowSheet({
 
   const isWatched = tracked?.status === "watched";
   const inWatchlist = tracked?.status === "watchlist";
+  const isDropped = tracked?.status === "dropped";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,7 +125,52 @@ export function QuickShowSheet({
             </div>
           </div>
 
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-1.5">
+              Sadece birkaç bölüm izledim
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {[1, 2, 3, 5, 10].map((n) => (
+                <button
+                  key={n}
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () => setEpisodeCount(meta, n, watchedAt),
+                      `${n} bölüm izledin olarak kaydedildi`,
+                    )
+                  }
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
+                    tracked?.status !== "watched" && tracked?.episodes_watched === n
+                      ? "bg-primary text-primary-foreground ring-primary"
+                      : "ring-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {n} bölüm
+                </button>
+              ))}
+              <button
+                disabled={busy}
+                onClick={() =>
+                  run(
+                    () => setDropped(meta, !isDropped, watchedAt),
+                    isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
+                  )
+                }
+                className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
+                  isDropped
+                    ? "bg-destructive text-destructive-foreground ring-destructive"
+                    : "ring-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                {isDropped ? "Bıraktım ✓" : "Bıraktım"}
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
+
             <button
               disabled={busy}
               onClick={() =>
@@ -214,7 +262,9 @@ export function UserShowChip({ tmdbId }: { tmdbId: number }) {
   const label =
     s.status === "watched"
       ? "İzledim"
-      : s.status === "partly_watched" || s.status === "watching"
+      : s.status === "dropped"
+        ? `Bıraktım · ${s.episodes_watched} bölüm`
+        : s.status === "partly_watched" || s.status === "watching"
         ? `${s.episodes_watched} bölüm`
         : s.status === "watchlist"
           ? "Listemde"
