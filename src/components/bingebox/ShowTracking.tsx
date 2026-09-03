@@ -1,21 +1,23 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Heart, Loader2 } from "lucide-react";
+import { Bell, BellOff, Bookmark, Check, ChevronDown, ChevronRight, Heart, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   isEpisodeLogged,
   isSeasonLogged,
   rateShow,
-  setNotify,
+  setDropped,
+  setEpisodeCount,
   setFavorite,
+  setNotify,
   setWatchlist,
   setWholeSeries,
   toggleEpisode,
   toggleSeason,
+  type ShowMeta,
   useInvalidateUserShows,
   useUserShowMap,
-  type ShowMeta,
 } from "@/lib/user-shows";
 import { getTvShows } from "@/lib/tmdb.functions";
 import { useWatchProviders, PROVIDER_LOGO_BASE } from "@/lib/use-watch-providers";
@@ -65,6 +67,7 @@ export function ShowTracking({
     }
   };
 
+  const isDropped = tracked?.status === "dropped";
   const inWatchlist = tracked?.status === "watchlist";
   const isWatched = tracked?.status === "watched";
   const isFavorite = !!tracked?.favorite;
