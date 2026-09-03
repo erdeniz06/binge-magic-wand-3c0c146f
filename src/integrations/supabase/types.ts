@@ -178,6 +178,8 @@ export type Database = {
           total_episodes: number | null
           updated_at: string
           user_id: string
+          watched_from: number | null
+          watched_to: number | null
         }
         Insert: {
           completed_at?: string | null
@@ -198,6 +200,8 @@ export type Database = {
           total_episodes?: number | null
           updated_at?: string
           user_id: string
+          watched_from?: number | null
+          watched_to?: number | null
         }
         Update: {
           completed_at?: string | null
@@ -218,6 +222,8 @@ export type Database = {
           total_episodes?: number | null
           updated_at?: string
           user_id?: string
+          watched_from?: number | null
+          watched_to?: number | null
         }
         Relationships: []
       }
