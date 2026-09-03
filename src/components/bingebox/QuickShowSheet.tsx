@@ -122,7 +122,52 @@ export function QuickShowSheet({
             </div>
           </div>
 
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-1.5">
+              Sadece birkaç bölüm izledim
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {[1, 2, 3, 5, 10].map((n) => (
+                <button
+                  key={n}
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () => setEpisodeCount(meta, n, watchedAt),
+                      `${n} bölüm izledin olarak kaydedildi`,
+                    )
+                  }
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
+                    tracked?.status !== "watched" && tracked?.episodes_watched === n
+                      ? "bg-primary text-primary-foreground ring-primary"
+                      : "ring-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {n} bölüm
+                </button>
+              ))}
+              <button
+                disabled={busy}
+                onClick={() =>
+                  run(
+                    () => setDropped(meta, !isDropped, watchedAt),
+                    isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
+                  )
+                }
+                className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
+                  isDropped
+                    ? "bg-destructive text-destructive-foreground ring-destructive"
+                    : "ring-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                {isDropped ? "Bıraktım ✓" : "Bıraktım"}
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
+
             <button
               disabled={busy}
               onClick={() =>
