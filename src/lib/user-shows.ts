@@ -147,7 +147,7 @@ async function persistEpisodes(
   meta: ShowMeta,
   keys: string[],
   episodeCountBySeason: Record<number, number>,
-  watchedAt?: Date,
+  period?: WatchPeriod,
 ) {
   const prev = await existing(meta.tmdb_id);
   const unique = Array.from(new Set(keys)).sort();
@@ -168,7 +168,7 @@ async function persistEpisodes(
     episodes_watched: unique.length,
     status,
     completed_at: complete
-      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      ? (periodDate(period, prev)?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
       : null,
   });
 }
@@ -179,7 +179,7 @@ export async function toggleEpisode(
   season: number,
   episode: number,
   episodeCountBySeason: Record<number, number>,
-  watchedAt?: Date,
+  period?: WatchPeriod,
 ) {
   const prev = await existing(meta.tmdb_id);
   const key = epKey(season, episode);
@@ -187,7 +187,7 @@ export async function toggleEpisode(
   const next = current.includes(key)
     ? current.filter((k) => k !== key)
     : [...current, key];
-  await persistEpisodes(meta, next, episodeCountBySeason, watchedAt);
+  await persistEpisodes(meta, next, episodeCountBySeason, period);
   return !current.includes(key);
 }
 
@@ -196,7 +196,7 @@ export async function toggleSeason(
   meta: ShowMeta,
   season: number,
   episodeCountBySeason: Record<number, number>,
-  watchedAt?: Date,
+  period?: WatchPeriod,
 ) {
   const prev = await existing(meta.tmdb_id);
   const count = episodeCountBySeason[season] ?? 0;
@@ -206,7 +206,7 @@ export async function toggleSeason(
   const next = all
     ? current.filter((k) => !seasonKeys.includes(k))
     : [...current, ...seasonKeys];
-  await persistEpisodes(meta, next, episodeCountBySeason, watchedAt);
+  await persistEpisodes(meta, next, episodeCountBySeason, period);
   return !all;
 }
 
@@ -218,7 +218,7 @@ export async function setWholeSeries(
   meta: ShowMeta,
   on: boolean,
   episodeCountBySeason: Record<number, number>,
-  watchedAt?: Date,
+  period?: WatchPeriod,
 ) {
   const prev = await existing(meta.tmdb_id);
   if (on) {
@@ -230,16 +230,16 @@ export async function setWholeSeries(
       episodes_watched: total,
       status: "watched",
       completed_at:
-        watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString(),
+        periodDate(period, prev)?.toISOString() ?? prev?.completed_at ?? new Date().toISOString(),
     });
     return true;
   }
-  await persistEpisodes(meta, prev?.episodes_logged ?? [], episodeCountBySeason, watchedAt);
+  await persistEpisodes(meta, prev?.episodes_logged ?? [], episodeCountBySeason, period);
   return false;
 }
 
 /** Save the user's own rating. Rating alone never implies a full watch. */
-export async function rateShow(meta: ShowMeta, rating: number | null, watchedAt?: Date) {
+export async function rateShow(meta: ShowMeta, rating: number | null, period?: WatchPeriod) {
   const prev = await existing(meta.tmdb_id);
   await save({
     ...base(meta, prev),
@@ -249,7 +249,7 @@ export async function rateShow(meta: ShowMeta, rating: number | null, watchedAt?
     episodes_watched: prev?.episodes_watched ?? 0,
     status: prev?.status ?? "watchlist",
     completed_at:
-      prev?.completed_at ?? (watchedAt ? watchedAt.toISOString() : null),
+      prev?.completed_at ?? ((periodDate(period, prev)?.toISOString() ?? null)),
   });
 }
 
@@ -273,8 +273,8 @@ export async function saveReview(
 }
 
 /** Mark the entire show as completed (used by the quick log dialog). */
-export async function logWholeShow(meta: ShowMeta, _seasonCount: number, watchedAt?: Date) {
-  await setWholeSeries(meta, true, {}, watchedAt);
+export async function logWholeShow(meta: ShowMeta, _seasonCount: number, period?: WatchPeriod) {
+  await setWholeSeries(meta, true, {}, period);
 }
 
 /** Log every episode of a season (additive; used by the quick log dialog). */
@@ -282,7 +282,7 @@ export async function logSeason(
   meta: ShowMeta,
   season: number,
   episodeCountBySeason: Record<number, number>,
-  watchedAt?: Date,
+  period?: WatchPeriod,
 ) {
   const prev = await existing(meta.tmdb_id);
   const count = episodeCountBySeason[season] ?? 0;
@@ -290,11 +290,11 @@ export async function logSeason(
     ...(prev?.episodes_logged ?? []),
     ...Array.from({ length: count }, (_, i) => epKey(season, i + 1)),
   ];
-  await persistEpisodes(meta, keys, episodeCountBySeason, watchedAt);
+  await persistEpisodes(meta, keys, episodeCountBySeason, period);
 }
 
 /** Log a single episode by count: bumps partial progress only. */
-export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
+export async function logEpisode(meta: ShowMeta, count = 1, period?: WatchPeriod) {
   const prev = await existing(meta.tmdb_id);
   const total = meta.total_episodes ?? prev?.total_episodes ?? null;
   const episodes = Math.min((prev?.episodes_watched ?? 0) + count, total ?? Infinity);
@@ -306,7 +306,7 @@ export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
     episodes_watched: episodes,
     status: complete ? "watched" : "partly_watched",
     completed_at: complete
-      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      ? (periodDate(period, prev)?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
       : null,
   });
 }
@@ -315,7 +315,7 @@ export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
 export async function setEpisodeCount(
   meta: ShowMeta,
   count: number,
-  watchedAt?: Date,
+  period?: WatchPeriod,
   dropped = false,
 ) {
   const prev = await existing(meta.tmdb_id);
@@ -329,19 +329,19 @@ export async function setEpisodeCount(
     episodes_watched: episodes,
     status: dropped ? "dropped" : complete ? "watched" : episodes > 0 ? "partly_watched" : "watchlist",
     completed_at: complete && !dropped
-      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      ? (periodDate(period, prev)?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
       : null,
   });
 }
 
 /** Mark as dropped, keeping whatever progress exists (min 1 episode). */
-export async function setDropped(meta: ShowMeta, on: boolean, watchedAt?: Date) {
+export async function setDropped(meta: ShowMeta, on: boolean, period?: WatchPeriod) {
   const prev = await existing(meta.tmdb_id);
   if (!on) {
-    await setEpisodeCount(meta, prev?.episodes_watched ?? 0, watchedAt, false);
+    await setEpisodeCount(meta, prev?.episodes_watched ?? 0, period, false);
     return false;
   }
-  await setEpisodeCount(meta, Math.max(1, prev?.episodes_watched ?? 0), watchedAt, true);
+  await setEpisodeCount(meta, Math.max(1, prev?.episodes_watched ?? 0), period, true);
   return true;
 }
 
