@@ -162,7 +162,7 @@ async function persistEpisodes(
       : "partly_watched";
 
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     episodes_logged: unique,
     seasons_logged: derivedSeasons(unique, episodeCountBySeason),
     episodes_watched: unique.length,
@@ -224,7 +224,7 @@ export async function setWholeSeries(
   if (on) {
     const total = meta.total_episodes ?? prev?.total_episodes ?? 0;
     await save({
-      ...base(meta, prev),
+      ...base(meta, prev, period),
       episodes_logged: prev?.episodes_logged ?? [],
       seasons_logged: prev?.seasons_logged ?? [],
       episodes_watched: total,
@@ -242,7 +242,7 @@ export async function setWholeSeries(
 export async function rateShow(meta: ShowMeta, rating: number | null, period?: WatchPeriod) {
   const prev = await existing(meta.tmdb_id);
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     rating,
     episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
@@ -261,7 +261,7 @@ export async function saveReview(
 ) {
   const prev = await existing(meta.tmdb_id);
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     review: review && review.trim().length > 0 ? review.trim() : null,
     rating: rating === undefined ? (prev?.rating ?? null) : rating,
     episodes_logged: prev?.episodes_logged ?? [],
@@ -300,7 +300,7 @@ export async function logEpisode(meta: ShowMeta, count = 1, period?: WatchPeriod
   const episodes = Math.min((prev?.episodes_watched ?? 0) + count, total ?? Infinity);
   const complete = total != null && episodes >= total;
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
     episodes_watched: episodes,
@@ -323,7 +323,7 @@ export async function setEpisodeCount(
   const episodes = Math.max(0, Math.min(count, total ?? Infinity));
   const complete = total != null && total > 0 && episodes >= total;
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
     episodes_watched: episodes,
@@ -347,10 +347,10 @@ export async function setDropped(meta: ShowMeta, on: boolean, period?: WatchPeri
 
 /** Add to / remove from watchlist. `notify` opts into new season/episode alerts. */
 
-export async function setWatchlist(meta: ShowMeta, notify: boolean) {
+export async function setWatchlist(meta: ShowMeta, notify: boolean, period?: WatchPeriod) {
   const prev = await existing(meta.tmdb_id);
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     notify,
     episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
@@ -364,10 +364,10 @@ export async function setWatchlist(meta: ShowMeta, notify: boolean) {
 }
 
 /** User-controlled favorite flag. Never inferred from ratings. */
-export async function setFavorite(meta: ShowMeta, favorite: boolean) {
+export async function setFavorite(meta: ShowMeta, favorite: boolean, period?: WatchPeriod) {
   const prev = await existing(meta.tmdb_id);
   await save({
-    ...base(meta, prev),
+    ...base(meta, prev, period),
     favorite,
     episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
