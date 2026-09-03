@@ -162,7 +162,9 @@ export function ShowTracking({
             disabled={busy}
             onClick={() =>
               run(
-                () => setDropped(meta, !isDropped, watchedAt),
+                async () => {
+                  await setDropped(meta, !isDropped, watchedAt);
+                },
                 isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
               )
             }
