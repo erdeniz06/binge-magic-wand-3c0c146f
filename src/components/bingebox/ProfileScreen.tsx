@@ -9,12 +9,13 @@ import { useUserShows, type UserShow } from "@/lib/user-shows";
 const DEFAULT_RUNTIME = 45;
 const TMDB_IMG = "https://image.tmdb.org/t/p/w200";
 
-type StatusTab = "watched" | "watching" | "partly_watched" | "watchlist";
+type StatusTab = "watched" | "watching" | "partly_watched" | "dropped" | "watchlist";
 
 const tabs: { id: StatusTab; label: string }[] = [
   { id: "watched", label: "Watched" },
   { id: "watching", label: "Watching" },
   { id: "partly_watched", label: "Partly" },
+  { id: "dropped", label: "Bıraktım" },
   { id: "watchlist", label: "Watchlist" },
 ];
 
@@ -109,6 +110,7 @@ export function ProfileScreen() {
       watched: rows.filter((r) => r.status === "watched"),
       watching: rows.filter((r) => r.status === "watching"),
       partly_watched: rows.filter((r) => r.status === "partly_watched"),
+      dropped: rows.filter((r) => r.status === "dropped"),
       watchlist: rows.filter((r) => r.status === "watchlist"),
     } as Record<StatusTab, UserShow[]>;
   }, [shows]);
