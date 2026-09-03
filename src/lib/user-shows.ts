@@ -311,7 +311,42 @@ export async function logEpisode(meta: ShowMeta, count = 1, watchedAt?: Date) {
   });
 }
 
+/** Set an exact watched-episode count (e.g. "sadece 1 bölüm izledim"). */
+export async function setEpisodeCount(
+  meta: ShowMeta,
+  count: number,
+  watchedAt?: Date,
+  dropped = false,
+) {
+  const prev = await existing(meta.tmdb_id);
+  const total = meta.total_episodes ?? prev?.total_episodes ?? null;
+  const episodes = Math.max(0, Math.min(count, total ?? Infinity));
+  const complete = total != null && total > 0 && episodes >= total;
+  await save({
+    ...base(meta, prev),
+    episodes_logged: prev?.episodes_logged ?? [],
+    seasons_logged: prev?.seasons_logged ?? [],
+    episodes_watched: episodes,
+    status: dropped ? "dropped" : complete ? "watched" : episodes > 0 ? "partly_watched" : "watchlist",
+    completed_at: complete && !dropped
+      ? (watchedAt?.toISOString() ?? prev?.completed_at ?? new Date().toISOString())
+      : null,
+  });
+}
+
+/** Mark as dropped, keeping whatever progress exists (min 1 episode). */
+export async function setDropped(meta: ShowMeta, on: boolean, watchedAt?: Date) {
+  const prev = await existing(meta.tmdb_id);
+  if (!on) {
+    await setEpisodeCount(meta, prev?.episodes_watched ?? 0, watchedAt, false);
+    return false;
+  }
+  await setEpisodeCount(meta, Math.max(1, prev?.episodes_watched ?? 0), watchedAt, true);
+  return true;
+}
+
 /** Add to / remove from watchlist. `notify` opts into new season/episode alerts. */
+
 export async function setWatchlist(meta: ShowMeta, notify: boolean) {
   const prev = await existing(meta.tmdb_id);
   await save({
