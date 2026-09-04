@@ -19,10 +19,11 @@ import {
   useInvalidateUserShows,
   useUserShowMap,
   type ShowMeta,
+  type WatchPeriod,
 } from "@/lib/user-shows";
+import { WatchYearPicker } from "./WatchYearPicker";
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 8 }, (_, i) => CURRENT_YEAR - i);
 
 /**
  * Lightweight rate / mark sheet used from list rows so the user can act
