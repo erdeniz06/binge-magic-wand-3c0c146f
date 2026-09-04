@@ -15,6 +15,7 @@ import {
   BROWSE_RATINGS,
   type BrowseChip,
 } from "@/lib/browse-categories";
+import { tvTitle } from "@/lib/format";
 
 const PROFILE_IMG = "https://image.tmdb.org/t/p/w185";
 
@@ -167,10 +168,7 @@ export function SearchScreen() {
           ) : (
             results.map((r) => {
               const isPerson = r.media_type === "person";
-              const title =
-                !isPerson && r.origin_country?.includes("TR") && r.original_name
-                  ? r.original_name
-                  : r.name;
+              const title = isPerson ? r.name : tvTitle(r);
               return (
                 <button
                   key={`${r.media_type}-${r.id}`}

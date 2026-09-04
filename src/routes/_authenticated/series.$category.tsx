@@ -6,7 +6,7 @@ import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { QuickShowSheet, UserShowChip } from "@/components/bingebox/QuickShowSheet";
 import type { ShowMeta } from "@/lib/user-shows";
 
-import { formatVotes } from "@/lib/format";
+import { formatVotes, tvTitle } from "@/lib/format";
 import { resolveTmdbCategory } from "@/lib/browse-categories";
 
 function getUserLanguage() {
@@ -43,6 +43,8 @@ const EXCLUDED_GENRES = new Set([10764, 10767]);
 type TmdbItem = {
   id: number;
   name: string;
+  original_name?: string;
+  origin_country?: string[];
   poster_path: string | null;
   first_air_date: string;
   vote_average: number;
@@ -150,14 +152,14 @@ function CategoryPage() {
                   {item.poster_path && (
                     <img
                       src={`${TMDB_IMAGE_BASE}${item.poster_path}`}
-                      alt={item.name}
+                      alt={tvTitle(item)}
                       loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{item.name}</p>
+                  <p className="text-sm font-semibold truncate">{tvTitle(item)}</p>
                   <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span>{item.first_air_date?.slice(0, 4) || "—"}</span>
                     <span className="flex items-center gap-0.5">
@@ -176,7 +178,7 @@ function CategoryPage() {
                 onClick={() =>
                   setQuick({
                     tmdb_id: item.id,
-                    title: item.name,
+                    title: tvTitle(item),
                     poster_path: item.poster_path,
                     total_episodes: null,
                   })

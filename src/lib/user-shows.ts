@@ -24,11 +24,16 @@ export type UserShow = {
   review: string | null;
   favorite: boolean;
   completed_at: string | null;
+  watched_from: number | null;
+  watched_to: number | null;
   updated_at: string;
 };
 
+/** A watch period: a single year (from === to) or a multi-year range. */
+export type WatchPeriod = { from: number; to: number };
+
 const SELECT =
-  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, completed_at, updated_at";
+  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, completed_at, watched_from, watched_to, updated_at";
 
 export const USER_SHOWS_KEY = ["user_shows"] as const;
 
@@ -107,7 +112,22 @@ async function save(row: Record<string, unknown>) {
   if (error) throw error;
 }
 
-function base(meta: ShowMeta, prev: UserShow | null) {
+/** Normalised period, falling back to whatever was stored before. */
+export function resolvePeriod(period: WatchPeriod | undefined, prev: UserShow | null) {
+  const from = period ? Math.min(period.from, period.to) : (prev?.watched_from ?? null);
+  const to = period ? Math.max(period.from, period.to) : (prev?.watched_to ?? null);
+  return { watched_from: from, watched_to: to };
+}
+
+/** Date used for `completed_at` — the last year of the watch period. */
+function periodDate(period: WatchPeriod | undefined, prev: UserShow | null) {
+  const { watched_to } = resolvePeriod(period, prev);
+  if (!watched_to) return undefined;
+  const now = new Date();
+  return watched_to === now.getFullYear() ? now : new Date(Date.UTC(watched_to, 11, 15, 12));
+}
+
+function base(meta: ShowMeta, prev: UserShow | null, period?: WatchPeriod) {
   return {
     tmdb_id: meta.tmdb_id,
     title: meta.title,
@@ -118,6 +138,7 @@ function base(meta: ShowMeta, prev: UserShow | null) {
     review: prev?.review ?? null,
     notify: prev?.notify ?? false,
     favorite: prev?.favorite ?? false,
+    ...resolvePeriod(period, prev),
   };
 }
 

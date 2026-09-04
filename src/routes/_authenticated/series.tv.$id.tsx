@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
+import { tvTitle } from "@/lib/format";
 import { ShowTracking } from "@/components/bingebox/ShowTracking";
 import { ReviewEditor } from "@/components/bingebox/ReviewEditor";
 
@@ -29,6 +30,8 @@ type TvDetail = {
   id: number;
   name: string;
   overview: string;
+  original_name?: string;
+  origin_country?: string[];
   poster_path: string | null;
   backdrop_path: string | null;
   first_air_date: string;
@@ -143,7 +146,7 @@ function SeriesDetailPage() {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <h1 className="text-base font-bold tracking-tight truncate">
-          {detail?.name ?? "…"}
+          {detail ? tvTitle(detail) : "…"}
         </h1>
       </header>
 
@@ -161,7 +164,7 @@ function SeriesDetailPage() {
             {detail.backdrop_path && (
               <img
                 src={`https://image.tmdb.org/t/p/w780${detail.backdrop_path}`}
-                alt={detail.name}
+                alt={tvTitle(detail)}
                 className="w-full h-full object-cover"
               />
             )}
@@ -182,13 +185,13 @@ function SeriesDetailPage() {
               {detail.poster_path && (
                 <img
                   src={`${TMDB_IMAGE_BASE}${detail.poster_path}`}
-                  alt={detail.name}
+                  alt={tvTitle(detail)}
                   className="w-full h-full object-cover"
                 />
               )}
             </div>
             <div className="flex-1 min-w-0 pt-10">
-              <h2 className="text-lg font-bold leading-tight">{detail.name}</h2>
+              <h2 className="text-lg font-bold leading-tight">{tvTitle(detail)}</h2>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                 <span>{detail.first_air_date?.slice(0, 4) || "—"}</span>
                 <span className="flex items-center gap-0.5">
@@ -218,7 +221,7 @@ function SeriesDetailPage() {
           <ShowTracking
             meta={{
               tmdb_id: detail.id,
-              title: detail.name,
+              title: tvTitle(detail),
               poster_path: detail.poster_path,
               total_episodes: detail.number_of_episodes ?? null,
               episode_runtime: (detail as { episode_run_time?: number[] }).episode_run_time?.[0] ?? null,
@@ -279,7 +282,7 @@ function SeriesDetailPage() {
             <ReviewEditor
               meta={{
                 tmdb_id: detail.id,
-                title: detail.name,
+                title: tvTitle(detail),
                 poster_path: detail.poster_path,
                 total_episodes: detail.number_of_episodes ?? null,
               }}

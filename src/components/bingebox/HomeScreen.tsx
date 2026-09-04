@@ -10,6 +10,7 @@ import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
 import { cn } from "@/lib/utils";
+import { tvTitle } from "@/lib/format";
 
 // Reality / Talk genres — excluded so "Popular This Week" stays scripted series only
 const EXCLUDED_GENRES = new Set([10764, 10767]);
@@ -35,7 +36,7 @@ function mapTmdb(results: TmdbShow[] | undefined, excludeGenres = false): Show[]
     .map((r) => ({
       id: String(r.id),
       // Turkish productions keep their original Turkish title
-      title: r.origin_country?.includes("TR") && r.original_name ? r.original_name : r.name,
+      title: tvTitle(r),
       year: r.first_air_date ? Number(r.first_air_date.slice(0, 4)) : 0,
       poster: `${TMDB_IMAGE_BASE}${r.poster_path}`,
       rating: r.vote_average,

@@ -14,7 +14,10 @@ import {
   setWatchlist,
   useInvalidateUserShows,
   type ShowMeta,
+  type WatchPeriod,
 } from "@/lib/user-shows";
+import { WatchYearPicker } from "./WatchYearPicker";
+import { tvTitle } from "@/lib/format";
 
 type LogMode = "episode" | "season" | "show" | "watchlist";
 
@@ -37,6 +40,8 @@ type SearchResult = {
 type TvDetail = {
   id: number;
   name: string;
+  original_name?: string;
+  origin_country?: string[];
   poster_path: string | null;
   number_of_episodes: number;
   episode_run_time?: number[];
@@ -63,12 +68,10 @@ export function LogActivityDialog({
   const [seasonSel, setSeasonSel] = useState<number[]>([]);
   const [rating, setRating] = useState<number | null>(null);
   const [notify, setNotify] = useState(false);
-  const [watchedYear, setWatchedYear] = useState<number | null>(null);
+  const [watchedPeriod, setWatchedPeriod] = useState<WatchPeriod | null>(null);
   const [saving, setSaving] = useState(false);
   const invalidate = useInvalidateUserShows();
 
-  const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   const searchQ = useQuery({
     queryKey: ["tmdb", "search", query, language],
@@ -108,7 +111,7 @@ export function LogActivityDialog({
     setSeasonSel([]);
     setRating(null);
     setNotify(false);
-    setWatchedYear(null);
+    setWatchedPeriod(null);
   };
 
   const close = (next: boolean) => {
@@ -119,7 +122,7 @@ export function LogActivityDialog({
   const meta: ShowMeta | null = detail
     ? {
         tmdb_id: detail.id,
-        title: detail.name,
+        title: tvTitle(detail),
         poster_path: detail.poster_path,
         total_episodes: detail.number_of_episodes ?? null,
         episode_runtime: detail.episode_run_time?.[0] ?? null,
@@ -128,17 +131,12 @@ export function LogActivityDialog({
 
   const submit = async () => {
     if (!meta || !mode) return;
-    if (mode !== "watchlist" && watchedYear == null) {
+    if (mode !== "watchlist" && watchedPeriod == null) {
       toast.error("Hangi yıl izlediğini seç");
       return;
     }
     setSaving(true);
-    const watchedAt =
-      mode === "watchlist"
-        ? undefined
-        : watchedYear === currentYear
-          ? new Date()
-          : new Date(Date.UTC(watchedYear!, 5, 15, 12));
+    const period = mode === "watchlist" ? undefined : watchedPeriod!;
     try {
       if (mode === "watchlist") {
         await setWatchlist(meta, notify);
@@ -146,8 +144,8 @@ export function LogActivityDialog({
           notify ? `${meta.title} watchlist'e eklendi, takip açık` : `${meta.title} watchlist'e eklendi`,
         );
       } else if (mode === "show") {
-        if (rating != null) await rateShow(meta, rating, watchedAt);
-        else await logWholeShow(meta, seasons.length, watchedAt);
+        if (rating != null) await rateShow(meta, rating, period);
+        else await logWholeShow(meta, seasons.length, period);
         toast.success(`${meta.title} izlendi olarak işaretlendi`);
       } else if (mode === "season") {
         if (seasonSel.length === 0) {
@@ -156,7 +154,7 @@ export function LogActivityDialog({
         }
         const ordered = [...seasonSel].sort((a, b) => a - b);
         for (const s of ordered) {
-          await logSeason(meta, s, episodeCountBySeason, watchedAt);
+          await logSeason(meta, s, episodeCountBySeason, period);
         }
         toast.success(
           ordered.length === 1
@@ -164,7 +162,7 @@ export function LogActivityDialog({
             : `${meta.title} · ${ordered.length} sezon izlendi (S${ordered.join(", S")})`,
         );
       } else {
-        await logEpisode(meta, 1, watchedAt);
+        await logEpisode(meta, 1, period);
         toast.success(`${meta.title} · 1 bölüm eklendi`);
       }
       invalidate();
@@ -190,7 +188,7 @@ export function LogActivityDialog({
                     setShowId(null);
                     setSeasonSel([]);
                     setRating(null);
-                    setWatchedYear(null);
+                    setWatchedPeriod(null);
                   } else {
                     setMode(null);
                     setQuery("");
@@ -268,9 +266,7 @@ export function LogActivityDialog({
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">
-                          {r.origin_country?.includes("TR") && r.original_name
-                            ? r.original_name
-                            : r.name}
+                          {tvTitle(r)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {r.first_air_date?.slice(0, 4) || "—"}
@@ -300,7 +296,7 @@ export function LogActivityDialog({
                       />
                     )}
                     <div>
-                      <p className="font-semibold leading-tight">{detail.name}</p>
+                      <p className="font-semibold leading-tight">{tvTitle(detail)}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {seasons.length} sezon · {detail.number_of_episodes} bölüm
                       </p>
@@ -406,26 +402,11 @@ export function LogActivityDialog({
                   )}
 
                   {mode !== "watchlist" && (
-                    <div className="space-y-2">
-                      <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-                        Hangi yıl izledin? (zorunlu)
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {yearOptions.map((y) => (
-                          <button
-                            key={y}
-                            onClick={() => setWatchedYear(y)}
-                            className={cn(
-                              "h-9 px-3 rounded-lg border text-xs font-semibold transition",
-                              watchedYear === y
-                                ? "bg-foreground text-background border-foreground"
-                                : "bg-card border-border hover:bg-accent",
-                            )}
-                          >
-                            {y === currentYear ? `${y} (bu yıl)` : y}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="space-y-1.5">
+                      <WatchYearPicker
+                        value={watchedPeriod}
+                        onChange={setWatchedPeriod}
+                      />
                       <p className="text-[11px] text-muted-foreground">
                         Geçmiş bir yıl seçersen bu yılki istatistiklerine sayılmaz.
                       </p>
@@ -437,7 +418,7 @@ export function LogActivityDialog({
                     disabled={
                       saving ||
                       (mode === "season" && seasonSel.length === 0) ||
-                      (mode !== "watchlist" && watchedYear == null)
+                      (mode !== "watchlist" && watchedPeriod == null)
                     }
                     className="w-full rounded-full bg-foreground text-background py-3 text-sm font-semibold disabled:opacity-50"
                   >

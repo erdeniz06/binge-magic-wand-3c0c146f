@@ -19,10 +19,11 @@ import {
   useInvalidateUserShows,
   useUserShowMap,
   type ShowMeta,
+  type WatchPeriod,
 } from "@/lib/user-shows";
+import { WatchYearPicker } from "./WatchYearPicker";
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 8 }, (_, i) => CURRENT_YEAR - i);
 
 /**
  * Lightweight rate / mark sheet used from list rows so the user can act
@@ -42,15 +43,19 @@ export function QuickShowSheet({
   const invalidate = useInvalidateUserShows();
   const tracked = meta ? map.get(meta.tmdb_id) : undefined;
   const [busy, setBusy] = useState(false);
-  const [year, setYear] = useState<number>(CURRENT_YEAR);
+  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null>(null);
 
+  // Reopening a show shows the period that was actually saved for it.
   useEffect(() => {
-    if (open) setYear(CURRENT_YEAR);
+    setDraftPeriod(null);
   }, [open, meta?.tmdb_id]);
 
   if (!meta) return null;
 
-  const watchedAt = new Date(year, 5, 15);
+  const stored: WatchPeriod | null = tracked?.watched_from
+    ? { from: tracked.watched_from, to: tracked.watched_to ?? tracked.watched_from }
+    : null;
+  const period = draftPeriod ?? stored ?? { from: CURRENT_YEAR, to: CURRENT_YEAR };
 
   const run = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true);
@@ -77,26 +82,7 @@ export function QuickShowSheet({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-1.5">
-              Hangi yıl izledin?
-            </p>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-              {YEARS.map((y) => (
-                <button
-                  key={y}
-                  onClick={() => setYear(y)}
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
-                    year === y
-                      ? "bg-primary text-primary-foreground ring-primary"
-                      : "ring-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {y}
-                </button>
-              ))}
-            </div>
-          </div>
+          <WatchYearPicker value={period} onChange={setDraftPeriod} />
 
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5">
@@ -109,7 +95,7 @@ export function QuickShowSheet({
                   disabled={busy}
                   onClick={() =>
                     run(
-                      () => rateShow(meta, tracked?.rating === n ? null : n, watchedAt),
+                      () => rateShow(meta, tracked?.rating === n ? null : n, period),
                       tracked?.rating === n ? "Puan kaldırıldı" : `${n}/10 verdin`,
                     )
                   }
@@ -136,7 +122,7 @@ export function QuickShowSheet({
                   disabled={busy}
                   onClick={() =>
                     run(
-                      () => setEpisodeCount(meta, n, watchedAt),
+                      () => setEpisodeCount(meta, n, period),
                       `${n} bölüm izledin olarak kaydedildi`,
                     )
                   }
@@ -153,7 +139,7 @@ export function QuickShowSheet({
                 disabled={busy}
                 onClick={() =>
                   run(
-                    () => setDropped(meta, !isDropped, watchedAt),
+                    () => setDropped(meta, !isDropped, period),
                     isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
                   )
                 }
@@ -175,7 +161,7 @@ export function QuickShowSheet({
               disabled={busy}
               onClick={() =>
                 run(
-                  () => setWholeSeries(meta, !isWatched, {}, watchedAt),
+                  () => setWholeSeries(meta, !isWatched, {}, period),
                   isWatched ? "İzledim işareti kaldırıldı" : "Tümünü izledin olarak kaydedildi",
                 )
               }
