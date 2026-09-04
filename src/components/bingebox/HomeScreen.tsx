@@ -35,7 +35,7 @@ function mapTmdb(results: TmdbShow[] | undefined, excludeGenres = false): Show[]
     .map((r) => ({
       id: String(r.id),
       // Turkish productions keep their original Turkish title
-      title: r.origin_country?.includes("TR") && r.original_name ? r.original_name : r.name,
+      title: tvTitle(r),
       year: r.first_air_date ? Number(r.first_air_date.slice(0, 4)) : 0,
       poster: `${TMDB_IMAGE_BASE}${r.poster_path}`,
       rating: r.vote_average,

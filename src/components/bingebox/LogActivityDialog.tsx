@@ -108,7 +108,7 @@ export function LogActivityDialog({
     setSeasonSel([]);
     setRating(null);
     setNotify(false);
-    setWatchedYear(null);
+    setWatchedPeriod(null);
   };
 
   const close = (next: boolean) => {
@@ -119,7 +119,7 @@ export function LogActivityDialog({
   const meta: ShowMeta | null = detail
     ? {
         tmdb_id: detail.id,
-        title: detail.name,
+        title: tvTitle(detail),
         poster_path: detail.poster_path,
         total_episodes: detail.number_of_episodes ?? null,
         episode_runtime: detail.episode_run_time?.[0] ?? null,
@@ -185,7 +185,7 @@ export function LogActivityDialog({
                     setShowId(null);
                     setSeasonSel([]);
                     setRating(null);
-                    setWatchedYear(null);
+                    setWatchedPeriod(null);
                   } else {
                     setMode(null);
                     setQuery("");
@@ -263,8 +263,8 @@ export function LogActivityDialog({
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">
-                          {r.origin_country?.includes("TR") && r.original_name
-                            ? r.original_name
+                          {true
+                            ? tvTitle(r)
                             : r.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -295,7 +295,7 @@ export function LogActivityDialog({
                       />
                     )}
                     <div>
-                      <p className="font-semibold leading-tight">{detail.name}</p>
+                      <p className="font-semibold leading-tight">{tvTitle(detail)}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {seasons.length} sezon · {detail.number_of_episodes} bölüm
                       </p>

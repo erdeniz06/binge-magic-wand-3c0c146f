@@ -168,8 +168,8 @@ export function SearchScreen() {
             results.map((r) => {
               const isPerson = r.media_type === "person";
               const title =
-                !isPerson && r.origin_country?.includes("TR") && r.original_name
-                  ? r.original_name
+                !isPerson
+                  ? tvTitle(r)
                   : r.name;
               return (
                 <button
