@@ -38,9 +38,12 @@ export function ShowTracking({
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
   const currentYear = new Date().getFullYear();
-  const [watchedYear, setWatchedYear] = useState<number>(currentYear);
-  const period =
-    watchedYear === currentYear ? new Date() : new Date(Date.UTC(watchedYear, 5, 15, 12));
+  // Watch period is remembered per show: reopening shows what was saved.
+  const storedPeriod: WatchPeriod | null = tracked?.watched_from
+    ? { from: tracked.watched_from, to: tracked.watched_to ?? tracked.watched_from }
+    : null;
+  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null>(null);
+  const period = draftPeriod ?? storedPeriod ?? { from: currentYear, to: currentYear };
   const providersQ = useWatchProviders([meta.tmdb_id]);
   const provider = providersQ.data?.[String(meta.tmdb_id)];
 
