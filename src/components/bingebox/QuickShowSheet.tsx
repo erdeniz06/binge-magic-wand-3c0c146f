@@ -42,15 +42,19 @@ export function QuickShowSheet({
   const invalidate = useInvalidateUserShows();
   const tracked = meta ? map.get(meta.tmdb_id) : undefined;
   const [busy, setBusy] = useState(false);
-  const [year, setYear] = useState<number>(CURRENT_YEAR);
+  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null>(null);
 
+  // Reopening a show shows the period that was actually saved for it.
   useEffect(() => {
-    if (open) setYear(CURRENT_YEAR);
+    setDraftPeriod(null);
   }, [open, meta?.tmdb_id]);
 
   if (!meta) return null;
 
-  const period = new Date(year, 5, 15);
+  const stored: WatchPeriod | null = tracked?.watched_from
+    ? { from: tracked.watched_from, to: tracked.watched_to ?? tracked.watched_from }
+    : null;
+  const period = draftPeriod ?? stored ?? { from: CURRENT_YEAR, to: CURRENT_YEAR };
 
   const run = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true);
