@@ -14,7 +14,9 @@ import {
   setWatchlist,
   useInvalidateUserShows,
   type ShowMeta,
+  type WatchPeriod,
 } from "@/lib/user-shows";
+import { WatchYearPicker } from "./WatchYearPicker";
 
 type LogMode = "episode" | "season" | "show" | "watchlist";
 
@@ -63,12 +65,10 @@ export function LogActivityDialog({
   const [seasonSel, setSeasonSel] = useState<number[]>([]);
   const [rating, setRating] = useState<number | null>(null);
   const [notify, setNotify] = useState(false);
-  const [watchedYear, setWatchedYear] = useState<number | null>(null);
+  const [watchedPeriod, setWatchedPeriod] = useState<WatchPeriod | null>(null);
   const [saving, setSaving] = useState(false);
   const invalidate = useInvalidateUserShows();
 
-  const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   const searchQ = useQuery({
     queryKey: ["tmdb", "search", query, language],
@@ -128,17 +128,12 @@ export function LogActivityDialog({
 
   const submit = async () => {
     if (!meta || !mode) return;
-    if (mode !== "watchlist" && watchedYear == null) {
+    if (mode !== "watchlist" && watchedPeriod == null) {
       toast.error("Hangi yıl izlediğini seç");
       return;
     }
     setSaving(true);
-    const period =
-      mode === "watchlist"
-        ? undefined
-        : watchedYear === currentYear
-          ? new Date()
-          : new Date(Date.UTC(watchedYear!, 5, 15, 12));
+    const period = mode === "watchlist" ? undefined : watchedPeriod!;
     try {
       if (mode === "watchlist") {
         await setWatchlist(meta, notify);
@@ -406,26 +401,11 @@ export function LogActivityDialog({
                   )}
 
                   {mode !== "watchlist" && (
-                    <div className="space-y-2">
-                      <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-                        Hangi yıl izledin? (zorunlu)
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {yearOptions.map((y) => (
-                          <button
-                            key={y}
-                            onClick={() => setWatchedYear(y)}
-                            className={cn(
-                              "h-9 px-3 rounded-lg border text-xs font-semibold transition",
-                              watchedYear === y
-                                ? "bg-foreground text-background border-foreground"
-                                : "bg-card border-border hover:bg-accent",
-                            )}
-                          >
-                            {y === currentYear ? `${y} (bu yıl)` : y}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="space-y-1.5">
+                      <WatchYearPicker
+                        value={watchedPeriod}
+                        onChange={setWatchedPeriod}
+                      />
                       <p className="text-[11px] text-muted-foreground">
                         Geçmiş bir yıl seçersen bu yılki istatistiklerine sayılmaz.
                       </p>
@@ -437,7 +417,7 @@ export function LogActivityDialog({
                     disabled={
                       saving ||
                       (mode === "season" && seasonSel.length === 0) ||
-                      (mode !== "watchlist" && watchedYear == null)
+                      (mode !== "watchlist" && watchedPeriod == null)
                     }
                     className="w-full rounded-full bg-foreground text-background py-3 text-sm font-semibold disabled:opacity-50"
                   >
