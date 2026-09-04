@@ -77,27 +77,7 @@ export function ShowTracking({
 
   return (
     <section className="px-4 mt-5 space-y-3">
-      <div className="space-y-2">
-        <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-          Hangi yıl izledin?
-        </p>
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-          {Array.from({ length: 10 }, (_, i) => currentYear - i).map((y) => (
-            <button
-              key={y}
-              onClick={() => setWatchedYear(y)}
-              className={cn(
-                "shrink-0 h-9 px-3 rounded-lg text-xs font-semibold transition",
-                watchedYear === y
-                  ? "bg-foreground text-background"
-                  : "bg-card ring-1 ring-border hover:bg-accent",
-              )}
-            >
-              {y === currentYear ? `${y} (bu yıl)` : y}
-            </button>
-          ))}
-        </div>
-      </div>
+      <WatchYearPicker value={period} onChange={setDraftPeriod} />
 
       <div className="flex gap-2">
         <button
