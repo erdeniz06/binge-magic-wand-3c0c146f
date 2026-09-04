@@ -17,6 +17,7 @@ import {
   type WatchPeriod,
 } from "@/lib/user-shows";
 import { WatchYearPicker } from "./WatchYearPicker";
+import { tvTitle } from "@/lib/format";
 
 type LogMode = "episode" | "season" | "show" | "watchlist";
 
@@ -39,6 +40,8 @@ type SearchResult = {
 type TvDetail = {
   id: number;
   name: string;
+  original_name?: string;
+  origin_country?: string[];
   poster_path: string | null;
   number_of_episodes: number;
   episode_run_time?: number[];
