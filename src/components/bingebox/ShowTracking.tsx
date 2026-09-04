@@ -16,12 +16,14 @@ import {
   toggleEpisode,
   toggleSeason,
   type ShowMeta,
+  type WatchPeriod,
   useInvalidateUserShows,
   useUserShowMap,
 } from "@/lib/user-shows";
 import { getTvShows } from "@/lib/tmdb.functions";
 import { useWatchProviders, PROVIDER_LOGO_BASE } from "@/lib/use-watch-providers";
 import { WatchProgress } from "./WatchProgress";
+import { WatchYearPicker } from "./WatchYearPicker";
 
 export type SeasonInfo = { season_number: number; episode_count: number; name?: string };
 
@@ -352,7 +354,7 @@ function SeasonEpisodes({
   meta: ShowMeta;
   season: number;
   episodeCountBySeason: Record<number, number>;
-  period: Date;
+  period: WatchPeriod;
   busy: boolean;
   run: (fn: () => Promise<void>, message: string) => Promise<void>;
   logged: (episode: number) => boolean;
