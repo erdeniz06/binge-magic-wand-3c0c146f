@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import {
-import { tvTitle } from "@/lib/format";
   BROWSE_COUNTRIES_MAIN,
   BROWSE_COUNTRIES_MORE,
   BROWSE_DECADES,
@@ -16,6 +15,7 @@ import { tvTitle } from "@/lib/format";
   BROWSE_RATINGS,
   type BrowseChip,
 } from "@/lib/browse-categories";
+import { tvTitle } from "@/lib/format";
 
 const PROFILE_IMG = "https://image.tmdb.org/t/p/w185";
 
