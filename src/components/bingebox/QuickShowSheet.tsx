@@ -50,7 +50,7 @@ export function QuickShowSheet({
 
   if (!meta) return null;
 
-  const watchedAt = new Date(year, 5, 15);
+  const period = new Date(year, 5, 15);
 
   const run = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true);
@@ -109,7 +109,7 @@ export function QuickShowSheet({
                   disabled={busy}
                   onClick={() =>
                     run(
-                      () => rateShow(meta, tracked?.rating === n ? null : n, watchedAt),
+                      () => rateShow(meta, tracked?.rating === n ? null : n, period),
                       tracked?.rating === n ? "Puan kaldırıldı" : `${n}/10 verdin`,
                     )
                   }
@@ -136,7 +136,7 @@ export function QuickShowSheet({
                   disabled={busy}
                   onClick={() =>
                     run(
-                      () => setEpisodeCount(meta, n, watchedAt),
+                      () => setEpisodeCount(meta, n, period),
                       `${n} bölüm izledin olarak kaydedildi`,
                     )
                   }
@@ -153,7 +153,7 @@ export function QuickShowSheet({
                 disabled={busy}
                 onClick={() =>
                   run(
-                    () => setDropped(meta, !isDropped, watchedAt),
+                    () => setDropped(meta, !isDropped, period),
                     isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
                   )
                 }
@@ -175,7 +175,7 @@ export function QuickShowSheet({
               disabled={busy}
               onClick={() =>
                 run(
-                  () => setWholeSeries(meta, !isWatched, {}, watchedAt),
+                  () => setWholeSeries(meta, !isWatched, {}, period),
                   isWatched ? "İzledim işareti kaldırıldı" : "Tümünü izledin olarak kaydedildi",
                 )
               }

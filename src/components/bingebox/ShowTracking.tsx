@@ -39,7 +39,7 @@ export function ShowTracking({
   const [expanded, setExpanded] = useState<number | null>(null);
   const currentYear = new Date().getFullYear();
   const [watchedYear, setWatchedYear] = useState<number>(currentYear);
-  const watchedAt =
+  const period =
     watchedYear === currentYear ? new Date() : new Date(Date.UTC(watchedYear, 5, 15, 12));
   const providersQ = useWatchProviders([meta.tmdb_id]);
   const provider = providersQ.data?.[String(meta.tmdb_id)];
@@ -118,7 +118,7 @@ export function ShowTracking({
           onClick={() =>
             run(
               async () => {
-                await setWholeSeries(meta, !isWatched, episodeCountBySeason, watchedAt);
+                await setWholeSeries(meta, !isWatched, episodeCountBySeason, period);
               },
               isWatched ? "Tüm dizi işareti kaldırıldı" : "Tüm diziyi izledin olarak işaretlendi",
             )
@@ -144,7 +144,7 @@ export function ShowTracking({
               disabled={busy}
               onClick={() =>
                 run(
-                  () => setEpisodeCount(meta, n, watchedAt),
+                  () => setEpisodeCount(meta, n, period),
                   `${n} bölüm izledin olarak kaydedildi`,
                 )
               }
@@ -163,7 +163,7 @@ export function ShowTracking({
             onClick={() =>
               run(
                 async () => {
-                  await setDropped(meta, !isDropped, watchedAt);
+                  await setDropped(meta, !isDropped, period);
                 },
                 isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
               )
@@ -250,7 +250,7 @@ export function ShowTracking({
                       onClick={() =>
                         run(
                           async () => {
-                            await toggleSeason(meta, s.season_number, episodeCountBySeason, watchedAt);
+                            await toggleSeason(meta, s.season_number, episodeCountBySeason, period);
                           },
                           done
                             ? `S${s.season_number} işareti kaldırıldı`
@@ -292,7 +292,7 @@ export function ShowTracking({
                       busy={busy}
                       run={run}
                       logged={(ep) => isEpisodeLogged(tracked, s.season_number, ep)}
-                      watchedAt={watchedAt}
+                      period={period}
                     />
                   )}
                 </div>
@@ -364,12 +364,12 @@ function SeasonEpisodes({
   busy,
   run,
   logged,
-  watchedAt,
+  period,
 }: {
   meta: ShowMeta;
   season: number;
   episodeCountBySeason: Record<number, number>;
-  watchedAt: Date;
+  period: Date;
   busy: boolean;
   run: (fn: () => Promise<void>, message: string) => Promise<void>;
   logged: (episode: number) => boolean;
@@ -407,7 +407,7 @@ function SeasonEpisodes({
               onClick={() =>
                 run(
                   async () => {
-                    await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason, watchedAt);
+                    await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason, period);
                   },
                   done
                     ? `S${season}E${ep.episode_number} işareti kaldırıldı`

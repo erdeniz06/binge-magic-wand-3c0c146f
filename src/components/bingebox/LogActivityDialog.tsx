@@ -133,7 +133,7 @@ export function LogActivityDialog({
       return;
     }
     setSaving(true);
-    const watchedAt =
+    const period =
       mode === "watchlist"
         ? undefined
         : watchedYear === currentYear
@@ -146,8 +146,8 @@ export function LogActivityDialog({
           notify ? `${meta.title} watchlist'e eklendi, takip açık` : `${meta.title} watchlist'e eklendi`,
         );
       } else if (mode === "show") {
-        if (rating != null) await rateShow(meta, rating, watchedAt);
-        else await logWholeShow(meta, seasons.length, watchedAt);
+        if (rating != null) await rateShow(meta, rating, period);
+        else await logWholeShow(meta, seasons.length, period);
         toast.success(`${meta.title} izlendi olarak işaretlendi`);
       } else if (mode === "season") {
         if (seasonSel.length === 0) {
@@ -156,7 +156,7 @@ export function LogActivityDialog({
         }
         const ordered = [...seasonSel].sort((a, b) => a - b);
         for (const s of ordered) {
-          await logSeason(meta, s, episodeCountBySeason, watchedAt);
+          await logSeason(meta, s, episodeCountBySeason, period);
         }
         toast.success(
           ordered.length === 1
@@ -164,7 +164,7 @@ export function LogActivityDialog({
             : `${meta.title} · ${ordered.length} sezon izlendi (S${ordered.join(", S")})`,
         );
       } else {
-        await logEpisode(meta, 1, watchedAt);
+        await logEpisode(meta, 1, period);
         toast.success(`${meta.title} · 1 bölüm eklendi`);
       }
       invalidate();
