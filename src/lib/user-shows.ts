@@ -24,11 +24,16 @@ export type UserShow = {
   review: string | null;
   favorite: boolean;
   completed_at: string | null;
+  watched_from: number | null;
+  watched_to: number | null;
   updated_at: string;
 };
 
+/** A watch period: a single year (from === to) or a multi-year range. */
+export type WatchPeriod = { from: number; to: number };
+
 const SELECT =
-  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, completed_at, updated_at";
+  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, completed_at, watched_from, watched_to, updated_at";
 
 export const USER_SHOWS_KEY = ["user_shows"] as const;
 
