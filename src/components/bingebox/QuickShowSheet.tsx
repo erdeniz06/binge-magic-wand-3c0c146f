@@ -81,26 +81,7 @@ export function QuickShowSheet({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-1.5">
-              Hangi yıl izledin?
-            </p>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-              {YEARS.map((y) => (
-                <button
-                  key={y}
-                  onClick={() => setYear(y)}
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
-                    year === y
-                      ? "bg-primary text-primary-foreground ring-primary"
-                      : "ring-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {y}
-                </button>
-              ))}
-            </div>
-          </div>
+          <WatchYearPicker value={period} onChange={setDraftPeriod} />
 
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5">
