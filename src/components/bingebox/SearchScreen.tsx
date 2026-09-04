@@ -168,10 +168,7 @@ export function SearchScreen() {
           ) : (
             results.map((r) => {
               const isPerson = r.media_type === "person";
-              const title =
-                !isPerson
-                  ? tvTitle(r)
-                  : r.name;
+              const title = isPerson ? r.name : tvTitle(r);
               return (
                 <button
                   key={`${r.media_type}-${r.id}`}

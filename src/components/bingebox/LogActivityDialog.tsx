@@ -266,9 +266,7 @@ export function LogActivityDialog({
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">
-                          {true
-                            ? tvTitle(r)
-                            : r.name}
+                          {tvTitle(r)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {r.first_air_date?.slice(0, 4) || "—"}
