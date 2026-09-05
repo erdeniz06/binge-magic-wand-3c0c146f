@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { GlassWater } from "lucide-react";
 import { PosterRow } from "./PosterRow";
 import { BingeWatchScreen } from "./BingeWatchScreen";
 import { ListsScreen } from "./ListsScreen";
@@ -177,7 +178,19 @@ export function HomeScreen() {
             showRating
             seeAllTo="/series/turkish-classics"
             accent={
-              statusAccent(turkishQ) ?? <span className="text-xs text-[var(--classic)]">TR</span>
+              statusAccent(turkishQ) ?? (
+                <span
+                  className="relative inline-flex h-8 w-8 items-center justify-center"
+                  aria-label="Türkiye"
+                >
+                  <GlassWater
+                    aria-hidden="true"
+                    className="absolute inset-0 h-8 w-8 fill-[var(--flag)] text-[var(--flag)] opacity-80"
+                    strokeWidth={1.5}
+                  />
+                  <span className="relative z-10 text-[10px] font-black text-foreground">TR</span>
+                </span>
+              )
             }
           />
           <PosterRow
