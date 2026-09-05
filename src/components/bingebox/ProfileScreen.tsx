@@ -334,7 +334,7 @@ export function ProfileScreen() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{s.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {s.episodes_watched > 0 ? `${s.episodes_watched} bölüm` : s.status}
+                        {progressLabel(s) ?? s.status}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground">
