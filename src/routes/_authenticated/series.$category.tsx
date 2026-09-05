@@ -181,6 +181,9 @@ function CategoryPage() {
                     title: tvTitle(item),
                     poster_path: item.poster_path,
                     total_episodes: null,
+                    first_air_year: item.first_air_date
+                      ? Number(item.first_air_date.slice(0, 4))
+                      : null,
                   })
                 }
                 className="self-start shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ring-1 ring-border text-muted-foreground hover:text-foreground hover:bg-muted"

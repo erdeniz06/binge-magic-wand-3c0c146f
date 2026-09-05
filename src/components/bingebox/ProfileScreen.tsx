@@ -3,7 +3,7 @@ import { Settings, LogOut, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { useUserShows, type UserShow } from "@/lib/user-shows";
+import { progressLabel, useUserShows, type UserShow } from "@/lib/user-shows";
 
 
 const DEFAULT_RUNTIME = 45;
@@ -334,7 +334,7 @@ export function ProfileScreen() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{s.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {s.episodes_watched > 0 ? `${s.episodes_watched} bölüm` : s.status}
+                        {progressLabel(s) ?? s.status}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground">

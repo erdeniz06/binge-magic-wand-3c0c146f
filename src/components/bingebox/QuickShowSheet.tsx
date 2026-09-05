@@ -15,6 +15,7 @@ import {
   setEpisodeCount,
   setFavorite,
   setWatchlist,
+  progressLabel,
   setWholeSeries,
   useInvalidateUserShows,
   useUserShowMap,
@@ -82,7 +83,11 @@ export function QuickShowSheet({
         </DialogHeader>
 
         <div className="space-y-4">
-          <WatchYearPicker value={period} onChange={setDraftPeriod} />
+          <WatchYearPicker
+            value={period}
+            onChange={setDraftPeriod}
+            minYear={meta.first_air_year ?? undefined}
+          />
 
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5">
@@ -245,16 +250,7 @@ export function UserShowChip({ tmdbId }: { tmdbId: number }) {
   const { map } = useUserShowMap();
   const s = map.get(tmdbId);
   if (!s) return null;
-  const label =
-    s.status === "watched"
-      ? "İzledim"
-      : s.status === "dropped"
-        ? `Bıraktım · ${s.episodes_watched} bölüm`
-        : s.status === "partly_watched" || s.status === "watching"
-        ? `${s.episodes_watched} bölüm`
-        : s.status === "watchlist"
-          ? "Listemde"
-          : null;
+  const label = progressLabel(s);
   return (
     <span className="mt-1 inline-flex items-center gap-1.5 text-[10px] font-semibold">
       {label ? (

@@ -66,7 +66,32 @@ export type ShowMeta = {
   poster_path: string | null;
   total_episodes: number | null;
   episode_runtime?: number | null;
+  /** First air year — used as the earliest selectable watch year. */
+  first_air_year?: number | null;
 };
+
+/**
+ * Human progress label. Always shows watched episodes against the series
+ * total (plus which seasons are done) so "35 bölüm" can't read as
+ * "the whole show is 35 episodes".
+ */
+export function progressLabel(s: UserShow): string | null {
+  const total = s.total_episodes && s.total_episodes > 0 ? s.total_episodes : null;
+  const eps = s.episodes_watched ?? 0;
+  const seasons = s.seasons_logged ?? [];
+  const counts = total ? `${eps}/${total} bölüm` : `${eps} bölüm`;
+  if (s.status === "watched") return "İzledim";
+  if (s.status === "dropped") return `Bıraktım · ${counts}`;
+  if (s.status === "partly_watched" || s.status === "watching") {
+    const seasonPart =
+      seasons.length > 0
+        ? `${seasons.map((n) => `S${n}`).join(", ")} tamam · `
+        : "";
+    return `${seasonPart}${counts}`;
+  }
+  if (s.status === "watchlist") return "Listemde";
+  return null;
+}
 
 /** Stable key for a single episode inside `episodes_logged`. */
 export const epKey = (season: number, episode: number) => `${season}x${episode}`;
