@@ -12,16 +12,22 @@ const CURRENT_YEAR = new Date().getFullYear();
 export function WatchYearPicker({
   value,
   onChange,
-  years = 12,
+  minYear,
   className,
 }: {
   value: WatchPeriod | null;
   onChange: (p: WatchPeriod) => void;
-  years?: number;
+  /** Earliest selectable year — normally the show's first air year. */
+  minYear?: number;
   className?: string;
 }) {
   const [anchor, setAnchor] = useState<number | null>(null);
-  const list = Array.from({ length: years }, (_, i) => CURRENT_YEAR - i);
+  // Never offer years before the show existed; fall back to 12 years back.
+  const start = Math.min(
+    CURRENT_YEAR,
+    Math.max(1940, minYear ?? CURRENT_YEAR - 11),
+  );
+  const list = Array.from({ length: CURRENT_YEAR - start + 1 }, (_, i) => CURRENT_YEAR - i);
 
   const pick = (y: number) => {
     if (anchor == null) {

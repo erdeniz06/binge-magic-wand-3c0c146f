@@ -40,6 +40,7 @@ type SearchResult = {
 type TvDetail = {
   id: number;
   name: string;
+  first_air_date?: string;
   original_name?: string;
   origin_country?: string[];
   poster_path: string | null;
@@ -126,6 +127,9 @@ export function LogActivityDialog({
         poster_path: detail.poster_path,
         total_episodes: detail.number_of_episodes ?? null,
         episode_runtime: detail.episode_run_time?.[0] ?? null,
+        first_air_year: detail.first_air_date
+          ? Number(detail.first_air_date.slice(0, 4))
+          : null,
       }
     : null;
 
@@ -406,6 +410,11 @@ export function LogActivityDialog({
                       <WatchYearPicker
                         value={watchedPeriod}
                         onChange={setWatchedPeriod}
+                        minYear={
+                          detail?.first_air_date
+                            ? Number(detail.first_air_date.slice(0, 4))
+                            : undefined
+                        }
                       />
                       <p className="text-[11px] text-muted-foreground">
                         Geçmiş bir yıl seçersen bu yılki istatistiklerine sayılmaz.

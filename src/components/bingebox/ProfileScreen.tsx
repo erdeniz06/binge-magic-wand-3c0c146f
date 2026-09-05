@@ -3,7 +3,7 @@ import { Settings, LogOut, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { useUserShows, type UserShow } from "@/lib/user-shows";
+import { progressLabel, useUserShows, type UserShow } from "@/lib/user-shows";
 
 
 const DEFAULT_RUNTIME = 45;

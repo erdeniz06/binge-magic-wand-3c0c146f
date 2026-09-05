@@ -225,6 +225,9 @@ function SeriesDetailPage() {
               poster_path: detail.poster_path,
               total_episodes: detail.number_of_episodes ?? null,
               episode_runtime: (detail as { episode_run_time?: number[] }).episode_run_time?.[0] ?? null,
+              first_air_year: detail.first_air_date
+                ? Number(detail.first_air_date.slice(0, 4))
+                : null,
             }}
             seasons={detail.seasons ?? []}
           />

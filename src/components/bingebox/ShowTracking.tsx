@@ -79,7 +79,11 @@ export function ShowTracking({
 
   return (
     <section className="px-4 mt-5 space-y-3">
-      <WatchYearPicker value={period} onChange={setDraftPeriod} />
+      <WatchYearPicker
+        value={period}
+        onChange={setDraftPeriod}
+        minYear={meta.first_air_year ?? undefined}
+      />
 
       <div className="flex gap-2">
         <button
