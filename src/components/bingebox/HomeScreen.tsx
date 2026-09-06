@@ -12,6 +12,7 @@ import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
 import { cn } from "@/lib/utils";
 import { tvTitle } from "@/lib/format";
+import turkishTeaGlassAsset from "@/assets/turkish-tea-glass.png.asset.json";
 
 // Reality / Talk genres — excluded so "Popular This Week" stays scripted series only
 const EXCLUDED_GENRES = new Set([10764, 10767]);
