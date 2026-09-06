@@ -119,10 +119,10 @@ export function HomeScreen() {
             params={{ category: "turkish-classics" }}
             className="flex items-center gap-2"
           >
-            <img
-              src={turkishTeaGlassAsset.url}
-              alt="Türk çay bardağı"
-              className="h-8 w-auto object-contain"
+            <GlassWater
+              aria-hidden="true"
+              className="h-10 w-10 fill-[var(--flag)] text-[var(--flag)] drop-shadow-[0_0_10px_var(--flag)]"
+              strokeWidth={1.5}
             />
             <span className="text-[11px] text-muted-foreground leading-tight">
               Top 50
