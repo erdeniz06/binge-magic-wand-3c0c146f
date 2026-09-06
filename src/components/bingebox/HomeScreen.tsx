@@ -12,7 +12,7 @@ import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
 import { cn } from "@/lib/utils";
 import { tvTitle } from "@/lib/format";
-import turkishTeaGlassAsset from "@/assets/turkish-tea-glass.png.asset.json";
+import turkishTeaGlass from "@/assets/turkish-tea-glass-red.png";
 
 // Reality / Talk genres — excluded so "Popular This Week" stays scripted series only
 const EXCLUDED_GENRES = new Set([10764, 10767]);
@@ -119,10 +119,11 @@ export function HomeScreen() {
             params={{ category: "turkish-classics" }}
             className="flex items-center gap-2"
           >
-            <GlassWater
+            <img
+              src={turkishTeaGlass}
+              alt=""
               aria-hidden="true"
-              className="h-10 w-10 fill-[var(--flag)] text-[var(--flag)] drop-shadow-[0_0_10px_var(--flag)]"
-              strokeWidth={1.5}
+              className="h-12 w-12 object-contain drop-shadow-[0_0_10px_var(--flag)]"
             />
             <span className="text-[11px] text-muted-foreground leading-tight">
               Top 50
