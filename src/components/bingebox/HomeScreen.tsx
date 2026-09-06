@@ -119,9 +119,11 @@ export function HomeScreen() {
             params={{ category: "turkish-classics" }}
             className="flex items-center gap-2"
           >
-            <span className="text-3xl leading-none" role="img" aria-label="Türkiye">
-              🇹🇷
-            </span>
+            <img
+              src={turkishTeaGlassAsset.url}
+              alt="Türk çay bardağı"
+              className="h-8 w-auto object-contain"
+            />
             <span className="text-[11px] text-muted-foreground leading-tight">
               Top 50
               <br />
