@@ -63,7 +63,7 @@
   --heart: oklch(0.68 0.24 22);
   --heart-hi: oklch(0.76 0.21 14);
   --heart-lo: oklch(0.48 0.19 22);
-  --flag: oklch(0.55 0.22 27);
+  --flag: oklch(0.62 0.24 25);
 
   --gradient-ai: linear-gradient(135deg, oklch(0.7 0.22 320), oklch(0.65 0.22 250) 50%, oklch(0.78 0.18 180));
   --shadow-ai: 0 10px 40px -10px oklch(0.6 0.25 300 / 60%);

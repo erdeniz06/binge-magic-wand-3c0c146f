@@ -185,7 +185,7 @@ export function HomeScreen() {
                 >
                   <GlassWater
                     aria-hidden="true"
-                    className="absolute inset-0 h-8 w-8 fill-[var(--flag)] text-[var(--flag)] opacity-80"
+                    className="absolute inset-0 h-8 w-8 fill-[var(--flag)] text-[var(--flag)] drop-shadow-[0_0_4px_var(--flag)]"
                     strokeWidth={1.5}
                   />
                   <span className="relative z-10 text-[10px] font-black text-foreground">TR</span>
