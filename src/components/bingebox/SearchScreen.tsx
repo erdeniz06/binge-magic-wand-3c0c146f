@@ -132,6 +132,9 @@ export function SearchScreen() {
 
   const Chip = ({ chip }: { chip: BrowseChip }) => (
     <button onClick={() => openCategory(chip.slug)} className={chipClass}>
+      {(chip.slug === "lang-turkish" || chip.slug === "country-turkey") && (
+        <TeaGlass className="h-4 w-4" />
+      )}
       {chip.label}
     </button>
   );

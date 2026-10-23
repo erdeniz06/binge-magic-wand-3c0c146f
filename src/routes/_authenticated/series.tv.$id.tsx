@@ -191,7 +191,10 @@ function SeriesDetailPage() {
               )}
             </div>
             <div className="flex-1 min-w-0 pt-10">
-              <h2 className="text-lg font-bold leading-tight">{tvTitle(detail)}</h2>
+              <h2 className="text-lg font-bold leading-tight flex items-center gap-1.5">
+                {tvTitle(detail)}
+                {detail.origin_country?.includes("TR") && <TeaGlass className="h-6 w-6" />}
+              </h2>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                 <span>{detail.first_air_date?.slice(0, 4) || "—"}</span>
                 <span className="flex items-center gap-0.5">
