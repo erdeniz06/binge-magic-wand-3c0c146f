@@ -43,7 +43,7 @@ export const Route = createFileRoute("/_authenticated/series/curated/$list")({
   ),
   errorComponent: ({ error }) => (
     <div role="alert" className="p-8 text-center text-sm text-destructive">
-      {error.message}
+      {(error as Error).message}
     </div>
   ),
   component: CuratedListPage,

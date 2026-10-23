@@ -1,3 +1,4 @@
+import { TeaGlass } from "@/components/bingebox/TeaGlass";
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -159,7 +160,10 @@ function CategoryPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{tvTitle(item)}</p>
+                  <p className="text-sm font-semibold truncate flex items-center gap-1">
+                    <span className="truncate">{tvTitle(item)}</span>
+                    {item.origin_country?.includes("TR") && <TeaGlass className="h-4 w-4" />}
+                  </p>
                   <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span>{item.first_air_date?.slice(0, 4) || "—"}</span>
                     <span className="flex items-center gap-0.5">

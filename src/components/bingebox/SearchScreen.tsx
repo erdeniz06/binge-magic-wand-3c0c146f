@@ -1,3 +1,4 @@
+import { TeaGlass } from "@/components/bingebox/TeaGlass";
 import { useEffect, useState } from "react";
 import { Search, Clock, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -132,6 +133,9 @@ export function SearchScreen() {
 
   const Chip = ({ chip }: { chip: BrowseChip }) => (
     <button onClick={() => openCategory(chip.slug)} className={chipClass}>
+      {(chip.slug === "lang-turkish" || chip.slug === "country-turkey") && (
+        <TeaGlass className="h-4 w-4" />
+      )}
       {chip.label}
     </button>
   );

@@ -9,22 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AuthenticatedSeriesCategoryRouteImport } from './routes/_authenticated/series.$category'
 import { Route as AuthenticatedPersonIdRouteImport } from './routes/_authenticated/person.$id'
-import { Route as AuthenticatedSeriesTvIdRouteImport } from './routes/_authenticated/series.tv.$id'
+import { Route as AuthenticatedSeriesCategoryRouteImport } from './routes/_authenticated/series.$category'
 import { Route as AuthenticatedSeriesCuratedListRouteImport } from './routes/_authenticated/series.curated.$list'
+import { Route as AuthenticatedSeriesTvIdRouteImport } from './routes/_authenticated/series.tv.$id'
 
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -37,28 +37,28 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPersonIdRoute = AuthenticatedPersonIdRouteImport.update({
+  id: '/person/$id',
+  path: '/person/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSeriesCategoryRoute =
   AuthenticatedSeriesCategoryRouteImport.update({
     id: '/series/$category',
     path: '/series/$category',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPersonIdRoute = AuthenticatedPersonIdRouteImport.update({
-  id: '/person/$id',
-  path: '/person/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSeriesTvIdRoute = AuthenticatedSeriesTvIdRouteImport.update({
-  id: '/series/tv/$id',
-  path: '/series/tv/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSeriesCuratedListRoute =
   AuthenticatedSeriesCuratedListRouteImport.update({
     id: '/series/curated/$list',
     path: '/series/curated/$list',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSeriesTvIdRoute = AuthenticatedSeriesTvIdRouteImport.update({
+  id: '/series/tv/$id',
+  path: '/series/tv/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -128,18 +128,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -156,13 +156,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/series/$category': {
-      id: '/_authenticated/series/$category'
-      path: '/series/$category'
-      fullPath: '/series/$category'
-      preLoaderRoute: typeof AuthenticatedSeriesCategoryRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/person/$id': {
       id: '/_authenticated/person/$id'
       path: '/person/$id'
@@ -170,11 +163,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPersonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/series/tv/$id': {
-      id: '/_authenticated/series/tv/$id'
-      path: '/series/tv/$id'
-      fullPath: '/series/tv/$id'
-      preLoaderRoute: typeof AuthenticatedSeriesTvIdRouteImport
+    '/_authenticated/series/$category': {
+      id: '/_authenticated/series/$category'
+      path: '/series/$category'
+      fullPath: '/series/$category'
+      preLoaderRoute: typeof AuthenticatedSeriesCategoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/series/curated/$list': {
@@ -182,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/series/curated/$list'
       fullPath: '/series/curated/$list'
       preLoaderRoute: typeof AuthenticatedSeriesCuratedListRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/series/tv/$id': {
+      id: '/_authenticated/series/tv/$id'
+      path: '/series/tv/$id'
+      fullPath: '/series/tv/$id'
+      preLoaderRoute: typeof AuthenticatedSeriesTvIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
