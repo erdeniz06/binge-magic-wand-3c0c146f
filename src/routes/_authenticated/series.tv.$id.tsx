@@ -1,3 +1,4 @@
+import { TeaGlass } from "@/components/bingebox/TeaGlass";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
