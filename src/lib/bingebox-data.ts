@@ -45,28 +45,6 @@ export const essentialClassicsTR: Show[] = [
   { id: "ezel", title: "Ezel", year: 2009, poster: poster("ezel-bb"), country: "TR" },
 ];
 
-export type ActivityItem = {
-  id: string;
-  initials: string;
-  name: string;
-  action: string;
-  meta?: string;
-  time: string;
-  liked?: boolean;
-  poster?: string;
-};
-
-export const activityFriends: ActivityItem[] = [
-  { id: "1", initials: "A", name: "Ahmet", action: "finished Breaking Bad", time: "2h ago", poster: poster("act-bb") },
-  { id: "2", initials: "Y", name: "Yağız", action: "liked a list · BingeBox Top 250 Series", time: "3h ago", liked: true },
-  { id: "3", initials: "M", name: "Mehmet", action: "watched S1 E3 of The Last of Us", time: "5h ago", poster: poster("act-lou") },
-  { id: "4", initials: "A", name: "Ayşe", action: "rated Dark 9.5/10", time: "7h ago", poster: poster("act-dark") },
-  { id: "5", initials: "C", name: "Can", action: "liked a review of Succession", time: "9h ago", liked: true, poster: poster("act-succ") },
-  { id: "6", initials: "D", name: "Deniz", action: "created a list · Korean Classics", time: "12h ago" },
-  { id: "7", initials: "E", name: "Elif", action: "finished Stranger Things S4", time: "1d ago", poster: poster("act-st") },
-  { id: "8", initials: "B", name: "Berk", action: "watched Ep 2 of Chernobyl", time: "1d ago", poster: poster("act-cher") },
-];
-
 export type BingePost = {
   id: string;
   user: string;
