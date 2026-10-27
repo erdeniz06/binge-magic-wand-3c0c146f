@@ -74,6 +74,53 @@ type Reviews = {
   }[];
 };
 
+/** Ten stars, one per point — 9/10 fills exactly nine of them. */
+function ScoreStars({
+  score,
+  className,
+  size = "w-3.5 h-3.5",
+}: {
+  score: number;
+  className?: string;
+  size?: string;
+}) {
+  const filled = Math.max(0, Math.min(10, Math.round(score)));
+  return (
+    <div
+      className={cn("flex items-center gap-0.5", className)}
+      aria-label={`Puan ${score.toFixed(1)}/10`}
+    >
+      {Array.from({ length: 10 }, (_, i) => (
+        <Star
+          key={i}
+          className={cn(
+            size,
+            i < filled
+              ? "fill-[var(--gold)] text-[var(--gold)]"
+              : "text-muted-foreground/30",
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Compact score pill, reused wherever the rating should stay visible. */
+function ScoreChip({ score, className }: { score: number; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1 rounded-full bg-background/85 ring-1 ring-border px-2 py-1 text-xs font-bold tabular-nums backdrop-blur",
+        className,
+      )}
+    >
+      <Star className="w-3.5 h-3.5 fill-[var(--gold)] text-[var(--gold)]" />
+      {score > 0 ? score.toFixed(1) : "—"}
+      <span className="text-[10px] font-semibold text-muted-foreground">/10</span>
+    </span>
+  );
+}
+
 /** The show's TMDB score, given the space it deserves on the detail page. */
 function ScorePanel({ score, votes }: { score: number; votes: number }) {
   const has = score > 0 && votes > 0;
@@ -90,19 +137,7 @@ function ScorePanel({ score, votes }: { score: number; votes: number }) {
           </span>
           <span className="text-base font-bold text-muted-foreground">/10</span>
         </div>
-        <div className="flex items-center gap-0.5 pb-1">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <Star
-              key={n}
-              className={cn(
-                "w-4 h-4",
-                has && score / 2 >= n - 0.5
-                  ? "fill-[var(--gold)] text-[var(--gold)]"
-                  : "text-muted-foreground/30",
-              )}
-            />
-          ))}
-        </div>
+        <ScoreStars score={has ? score : 0} size="w-4 h-4" className="pb-1" />
       </div>
       <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
         <div
@@ -192,9 +227,10 @@ function SeriesDetailPage() {
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold tracking-tight truncate">
+        <h1 className="text-base font-bold tracking-tight truncate flex-1 min-w-0">
           {detail ? tvTitle(detail) : "…"}
         </h1>
+        {detail && <ScoreChip score={detail.vote_average ?? 0} />}
       </header>
 
       {detailQ.isLoading ? (
@@ -216,6 +252,10 @@ function SeriesDetailPage() {
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+            <ScoreChip
+              score={detail.vote_average ?? 0}
+              className="absolute left-3 top-3 shadow-lg"
+            />
             {trailer && (
               <button
                 onClick={() => setTrailerOpen(true)}
@@ -330,7 +370,10 @@ function SeriesDetailPage() {
           )}
 
           <section className="px-4 mt-6 space-y-3">
-            <h3 className="text-sm font-bold">Yorumlar</h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold">Yorumlar</h3>
+              <ScoreChip score={detail.vote_average ?? 0} />
+            </div>
             <ReviewEditor
               meta={{
                 tmdb_id: detail.id,
