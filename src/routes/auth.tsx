@@ -25,7 +25,12 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [remember, setRemember] = useState(true);
+
   useEffect(() => {
+    const saved = localStorage.getItem("bingebox-remember-email");
+    if (saved) setEmail(saved);
+    else if (localStorage.getItem("bingebox-remember-off")) setRemember(false);
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/" });
     });
@@ -42,6 +47,13 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+      }
+      if (remember) {
+        localStorage.setItem("bingebox-remember-email", email);
+        localStorage.removeItem("bingebox-remember-off");
+      } else {
+        localStorage.removeItem("bingebox-remember-email");
+        localStorage.setItem("bingebox-remember-off", "1");
       }
       navigate({ to: "/" });
     } catch (err) {
@@ -78,15 +90,19 @@ function AuthPage() {
           <div className="flex-1 h-px bg-border" /> or <div className="flex-1 h-px bg-border" />
         </div>
 
-        <form onSubmit={handleEmail} className="space-y-3">
+        <form onSubmit={handleEmail} className="space-y-3" autoComplete="on">
           <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input id="email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" name="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 accent-[var(--primary)]" />
+            Bilgilerimi kaydet
+          </label>
           <Button type="submit" className="w-full h-11" disabled={loading}>
             {loading ? "Loading..." : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
