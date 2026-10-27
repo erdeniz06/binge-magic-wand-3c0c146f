@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ChevronLeft, Loader2, Play, Star, X } from "lucide-react";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { tvTitle } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { ShowTracking } from "@/components/bingebox/ShowTracking";
 import { ReviewEditor } from "@/components/bingebox/ReviewEditor";
 
@@ -72,6 +73,51 @@ type Reviews = {
     author_details?: { rating: number | null; avatar_path: string | null };
   }[];
 };
+
+/** The show's TMDB score, given the space it deserves on the detail page. */
+function ScorePanel({ score, votes }: { score: number; votes: number }) {
+  const has = score > 0 && votes > 0;
+  const pct = Math.max(0, Math.min(100, (score / 10) * 100));
+  return (
+    <section className="mx-4 mt-4 rounded-2xl bg-card ring-1 ring-border p-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        TMDB Kullanıcı Puanı
+      </p>
+      <div className="mt-1.5 flex items-end justify-between gap-3">
+        <div className="flex items-baseline gap-1">
+          <span className="text-5xl font-black leading-none tracking-tight tabular-nums">
+            {has ? score.toFixed(1) : "—"}
+          </span>
+          <span className="text-base font-bold text-muted-foreground">/10</span>
+        </div>
+        <div className="flex items-center gap-0.5 pb-1">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star
+              key={n}
+              className={cn(
+                "w-4 h-4",
+                has && score / 2 >= n - 0.5
+                  ? "fill-[var(--gold)] text-[var(--gold)]"
+                  : "text-muted-foreground/30",
+              )}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-[var(--gold)]"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {has
+          ? `${votes.toLocaleString("tr-TR")} kişi puanladı`
+          : "Henüz puan yok"}
+      </p>
+    </section>
+  );
+}
 
 function SeriesDetailPage() {
   const { id } = Route.useParams();
@@ -198,17 +244,16 @@ function SeriesDetailPage() {
               </h2>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                 <span>{detail.first_air_date?.slice(0, 4) || "—"}</span>
-                <span className="flex items-center gap-0.5">
-                  <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
-                  {detail.vote_average?.toFixed(1) ?? "—"}
-                </span>
-                <span>· {detail.vote_count?.toLocaleString()} oy</span>
+                <span>· {detail.number_of_seasons} sezon</span>
+                <span>· {detail.number_of_episodes} bölüm</span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                {detail.number_of_seasons} sezon · {detail.number_of_episodes} bölüm
-              </p>
             </div>
           </div>
+
+          <ScorePanel
+            score={detail.vote_average ?? 0}
+            votes={detail.vote_count ?? 0}
+          />
 
           <div className="px-4 mt-4 flex flex-wrap gap-1.5">
             {detail.genres?.map((g) => (
