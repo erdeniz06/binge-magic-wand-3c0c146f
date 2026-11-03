@@ -45,8 +45,16 @@ export function ShowTracking({
   const storedPeriod: WatchPeriod | null = tracked?.watched_from
     ? { from: tracked.watched_from, to: tracked.watched_to ?? tracked.watched_from }
     : null;
-  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null>(null);
-  const period = draftPeriod ?? storedPeriod ?? { from: currentYear, to: currentYear };
+  // `undefined` = nothing picked yet, `null` = the user cleared the pick.
+  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null | undefined>(undefined);
+  const period: WatchPeriod | null =
+    draftPeriod !== undefined
+      ? draftPeriod
+      : tracked
+        ? storedPeriod // already tracked: show exactly what was saved
+        : (storedPeriod ?? { from: currentYear, to: currentYear });
+  // Save helpers take the period optionally; a cleared pick stores no year.
+  const periodArg = period ?? undefined;
   const providersQ = useWatchProviders([meta.tmdb_id]);
   const provider = providersQ.data?.[String(meta.tmdb_id)];
 
@@ -111,7 +119,7 @@ export function ShowTracking({
           onClick={() =>
             run(
               async () => {
-                await setWholeSeries(meta, !isWatched, episodeCountBySeason, period);
+                await setWholeSeries(meta, !isWatched, episodeCountBySeason, periodArg);
               },
               isWatched ? "Tüm dizi işareti kaldırıldı" : "Tüm diziyi izledin olarak işaretlendi",
             )
@@ -137,7 +145,7 @@ export function ShowTracking({
               disabled={busy}
               onClick={() =>
                 run(
-                  () => setEpisodeCount(meta, n, period),
+                  () => setEpisodeCount(meta, n, periodArg),
                   `${n} bölüm izledin olarak kaydedildi`,
                 )
               }
@@ -156,7 +164,7 @@ export function ShowTracking({
             onClick={() =>
               run(
                 async () => {
-                  await setDropped(meta, !isDropped, period);
+                  await setDropped(meta, !isDropped, periodArg);
                 },
                 isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
               )
@@ -243,7 +251,7 @@ export function ShowTracking({
                       onClick={() =>
                         run(
                           async () => {
-                            await toggleSeason(meta, s.season_number, episodeCountBySeason, period);
+                            await toggleSeason(meta, s.season_number, episodeCountBySeason, periodArg);
                           },
                           done
                             ? `S${s.season_number} işareti kaldırıldı`
@@ -285,7 +293,7 @@ export function ShowTracking({
                       busy={busy}
                       run={run}
                       logged={(ep) => isEpisodeLogged(tracked, s.season_number, ep)}
-                      period={period}
+                      period={periodArg}
                     />
                   )}
                 </div>
@@ -362,7 +370,7 @@ function SeasonEpisodes({
   meta: ShowMeta;
   season: number;
   episodeCountBySeason: Record<number, number>;
-  period: WatchPeriod;
+  period?: WatchPeriod;
   busy: boolean;
   run: (fn: () => Promise<void>, message: string) => Promise<void>;
   logged: (episode: number) => boolean;
