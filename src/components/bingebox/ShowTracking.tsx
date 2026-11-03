@@ -17,6 +17,7 @@ import {
   toggleSeason,
   type ShowMeta,
   type WatchPeriod,
+  setWatchPeriod,
   useInvalidateUserShows,
   useUserShowMap,
 } from "@/lib/user-shows";
@@ -81,7 +82,10 @@ export function ShowTracking({
     <section className="px-4 mt-5 space-y-3">
       <WatchYearPicker
         value={period}
-        onChange={setDraftPeriod}
+        onChange={(p) => {
+          setDraftPeriod(p);
+          if (tracked) setWatchPeriod(meta.tmdb_id, p).then(invalidate).catch(() => {});
+        }}
         minYear={meta.first_air_year ?? undefined}
       />
 

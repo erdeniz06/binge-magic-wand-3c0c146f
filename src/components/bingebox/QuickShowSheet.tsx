@@ -21,6 +21,7 @@ import {
   useUserShowMap,
   type ShowMeta,
   type WatchPeriod,
+  setWatchPeriod,
 } from "@/lib/user-shows";
 import { WatchYearPicker } from "./WatchYearPicker";
 
@@ -85,7 +86,10 @@ export function QuickShowSheet({
         <div className="space-y-4">
           <WatchYearPicker
             value={period}
-            onChange={setDraftPeriod}
+            onChange={(p) => {
+          setDraftPeriod(p);
+          if (tracked) setWatchPeriod(meta.tmdb_id, p).then(invalidate).catch(() => {});
+        }}
             minYear={meta.first_air_year ?? undefined}
           />
 
