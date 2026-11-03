@@ -450,7 +450,8 @@ export async function setWatchPeriod(tmdbId: number, period: WatchPeriod | null)
   const patch: Record<string, unknown> = { watched_from, watched_to, updated_at: new Date().toISOString() };
   if (period && prev?.completed_at) {
     const now = new Date();
-    patch.completed_at = (watched_to === now.getFullYear() ? now : new Date(Date.UTC(watched_to, 11, 15, 12))).toISOString();
+    const to = Math.max(period.from, period.to);
+    patch.completed_at = (to === now.getFullYear() ? now : new Date(Date.UTC(to, 11, 15, 12))).toISOString();
   }
   const { error } = await supabase.from("user_shows").update(patch as never).eq("tmdb_id", tmdbId);
   if (error) throw error;
