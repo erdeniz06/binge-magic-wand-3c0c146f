@@ -45,11 +45,11 @@ export function QuickShowSheet({
   const invalidate = useInvalidateUserShows();
   const tracked = meta ? map.get(meta.tmdb_id) : undefined;
   const [busy, setBusy] = useState(false);
-  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null>(null);
+  const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null | undefined>(undefined);
 
   // Reopening a show shows the period that was actually saved for it.
   useEffect(() => {
-    setDraftPeriod(null);
+    setDraftPeriod(undefined);
   }, [open, meta?.tmdb_id]);
 
   if (!meta) return null;
@@ -104,7 +104,7 @@ export function QuickShowSheet({
                   disabled={busy}
                   onClick={() =>
                     run(
-                      () => rateShow(meta, tracked?.rating === n ? null : n, period),
+                      () => rateShow(meta, tracked?.rating === n ? null : n, periodArg),
                       tracked?.rating === n ? "Puan kaldırıldı" : `${n}/10 verdin`,
                     )
                   }
@@ -131,7 +131,7 @@ export function QuickShowSheet({
                   disabled={busy}
                   onClick={() =>
                     run(
-                      () => setEpisodeCount(meta, n, period),
+                      () => setEpisodeCount(meta, n, periodArg),
                       `${n} bölüm izledin olarak kaydedildi`,
                     )
                   }
@@ -148,7 +148,7 @@ export function QuickShowSheet({
                 disabled={busy}
                 onClick={() =>
                   run(
-                    () => setDropped(meta, !isDropped, period),
+                    () => setDropped(meta, !isDropped, periodArg),
                     isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
                   )
                 }
@@ -170,7 +170,7 @@ export function QuickShowSheet({
               disabled={busy}
               onClick={() =>
                 run(
-                  () => setWholeSeries(meta, !isWatched, {}, period),
+                  () => setWholeSeries(meta, !isWatched, {}, periodArg),
                   isWatched ? "İzledim işareti kaldırıldı" : "Tümünü izledin olarak kaydedildi",
                 )
               }

@@ -6,8 +6,8 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * Year / period picker for "when did you watch this?".
- * First tap picks a single year, a second tap on another year turns the
- * selection into a range (e.g. 2020–2023) for shows watched over seasons.
+ * Tap a year to pick it, tap that same year again to drop the pick.
+ * Tapping a second, different year turns the pick into a range (2020–2023).
  */
 export function WatchYearPicker({
   value,
@@ -16,7 +16,8 @@ export function WatchYearPicker({
   className,
 }: {
   value: WatchPeriod | null;
-  onChange: (p: WatchPeriod) => void;
+  /** `null` means "no year picked" — the selection was cleared. */
+  onChange: (p: WatchPeriod | null) => void;
   /** Earliest selectable year — normally the show's first air year. */
   minYear?: number;
   className?: string;
@@ -29,7 +30,17 @@ export function WatchYearPicker({
   );
   const list = Array.from({ length: CURRENT_YEAR - start + 1 }, (_, i) => CURRENT_YEAR - i);
 
+  const lo = value ? Math.min(value.from, value.to) : null;
+  const hi = value ? Math.max(value.from, value.to) : null;
+  const inRange = (y: number) => lo != null && hi != null && y >= lo && y <= hi;
+
   const pick = (y: number) => {
+    // Already picked? Tapping it again removes the selection.
+    if (inRange(y)) {
+      setAnchor(null);
+      onChange(null);
+      return;
+    }
     if (anchor == null) {
       setAnchor(y);
       onChange({ from: y, to: y });
@@ -38,9 +49,6 @@ export function WatchYearPicker({
     setAnchor(null);
     onChange({ from: Math.min(anchor, y), to: Math.max(anchor, y) });
   };
-
-  const inRange = (y: number) =>
-    !!value && y >= Math.min(value.from, value.to) && y <= Math.max(value.from, value.to);
 
   return (
     <div className={cn("space-y-1.5", className)}>
@@ -52,7 +60,9 @@ export function WatchYearPicker({
           <span className="text-[11px] font-bold text-foreground">
             {value.from === value.to ? value.from : `${value.from}–${value.to}`}
           </span>
-        ) : null}
+        ) : (
+          <span className="text-[11px] font-semibold text-muted-foreground">seçili değil</span>
+        )}
       </div>
       <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
         {list.map((y) => (
@@ -74,8 +84,8 @@ export function WatchYearPicker({
       </div>
       <p className="text-[10px] text-muted-foreground">
         {anchor != null
-          ? `Aralık için bitiş yılına dokun (başlangıç: ${anchor})`
-          : "Birkaç yıl boyunca izlediysen ikinci yıla da dokun (örn. 2020–2023)."}
+          ? `Aralık için bitiş yılına dokun (başlangıç: ${anchor}) · ${anchor}'a tekrar dokunursan seçim silinir`
+          : "Bir yıla dokun, aynı yıla tekrar dokunursan seçim silinir. Aralık için ikinci bir yıla dokun (örn. 2020–2023)."}
       </p>
     </div>
   );

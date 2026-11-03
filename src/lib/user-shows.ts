@@ -438,10 +438,10 @@ export async function setNotify(tmdbId: number, notify: boolean) {
   if (error) throw error;
 }
 
-/** Persist just the watch period for an already-tracked show. */
-export async function setWatchPeriod(tmdbId: number, period: WatchPeriod) {
-  const watched_from = Math.min(period.from, period.to);
-  const watched_to = Math.max(period.from, period.to);
+/** Persist just the watch period for an already-tracked show. `null` clears it. */
+export async function setWatchPeriod(tmdbId: number, period: WatchPeriod | null) {
+  const watched_from = period ? Math.min(period.from, period.to) : null;
+  const watched_to = period ? Math.max(period.from, period.to) : null;
   const { data: prev } = await supabase
     .from("user_shows")
     .select("completed_at")
