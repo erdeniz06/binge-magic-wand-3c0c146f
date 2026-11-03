@@ -437,3 +437,21 @@ export async function setNotify(tmdbId: number, notify: boolean) {
     .eq("tmdb_id", tmdbId);
   if (error) throw error;
 }
+
+/** Persist just the watch period for an already-tracked show. */
+export async function setWatchPeriod(tmdbId: number, period: WatchPeriod) {
+  const watched_from = Math.min(period.from, period.to);
+  const watched_to = Math.max(period.from, period.to);
+  const { data: prev } = await supabase
+    .from("user_shows")
+    .select("completed_at")
+    .eq("tmdb_id", tmdbId)
+    .maybeSingle();
+  const patch: Record<string, unknown> = { watched_from, watched_to, updated_at: new Date().toISOString() };
+  if (prev?.completed_at) {
+    const now = new Date();
+    patch.completed_at = (watched_to === now.getFullYear() ? now : new Date(Date.UTC(watched_to, 11, 15, 12))).toISOString();
+  }
+  const { error } = await supabase.from("user_shows").update(patch as never).eq("tmdb_id", tmdbId);
+  if (error) throw error;
+}
