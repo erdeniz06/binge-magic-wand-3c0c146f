@@ -48,9 +48,11 @@ export function ShowTracking({
   // `undefined` = nothing picked yet, `null` = the user cleared the pick.
   const [draftPeriod, setDraftPeriod] = useState<WatchPeriod | null | undefined>(undefined);
   const period: WatchPeriod | null =
-    draftPeriod === undefined
-      ? (storedPeriod ?? { from: currentYear, to: currentYear })
-      : draftPeriod;
+    draftPeriod !== undefined
+      ? draftPeriod
+      : tracked
+        ? storedPeriod // already tracked: show exactly what was saved
+        : (storedPeriod ?? { from: currentYear, to: currentYear });
   // Save helpers take the period optionally; a cleared pick stores no year.
   const periodArg = period ?? undefined;
   const providersQ = useWatchProviders([meta.tmdb_id]);
