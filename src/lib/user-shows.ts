@@ -448,7 +448,7 @@ export async function setWatchPeriod(tmdbId: number, period: WatchPeriod | null)
     .eq("tmdb_id", tmdbId)
     .maybeSingle();
   const patch: Record<string, unknown> = { watched_from, watched_to, updated_at: new Date().toISOString() };
-  if (prev?.completed_at) {
+  if (period && prev?.completed_at) {
     const now = new Date();
     patch.completed_at = (watched_to === now.getFullYear() ? now : new Date(Date.UTC(watched_to, 11, 15, 12))).toISOString();
   }

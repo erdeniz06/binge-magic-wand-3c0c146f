@@ -57,7 +57,12 @@ export function QuickShowSheet({
   const stored: WatchPeriod | null = tracked?.watched_from
     ? { from: tracked.watched_from, to: tracked.watched_to ?? tracked.watched_from }
     : null;
-  const period = draftPeriod ?? stored ?? { from: CURRENT_YEAR, to: CURRENT_YEAR };
+  // `undefined` = nothing picked yet, `null` = the user cleared the pick.
+  const period: WatchPeriod | null =
+    draftPeriod === undefined
+      ? (stored ?? { from: CURRENT_YEAR, to: CURRENT_YEAR })
+      : draftPeriod;
+  const periodArg = period ?? undefined;
 
   const run = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true);
