@@ -85,7 +85,7 @@ export function progressLabel(s: UserShow): string | null {
   if (s.status === "partly_watched" || s.status === "watching") {
     const seasonPart =
       seasons.length > 0
-        ? `${seasons.map((n) => `S${n}`).join(", ")} tamam · `
+        ? `${seasons.map((n) => `S${n}`).join(", ")} done · `
         : "";
     return `${seasonPart}${counts}`;
   }

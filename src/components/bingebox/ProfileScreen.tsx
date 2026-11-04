@@ -42,7 +42,7 @@ export function ProfileScreen() {
       }
       if (data.user?.created_at) {
         setMemberSince(
-          new Date(data.user.created_at).toLocaleDateString("tr-TR", {
+          new Date(data.user.created_at).toLocaleDateString("en-US", {
             month: "long",
             year: "numeric",
           }),
@@ -358,7 +358,7 @@ export function ProfileScreen() {
                     </p>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {watchDate(s)!.toLocaleDateString("tr-TR", {
+                    {watchDate(s)!.toLocaleDateString("en-US", {
                       day: "numeric",
                       month: "short",
                     })}

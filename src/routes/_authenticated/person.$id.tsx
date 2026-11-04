@@ -98,7 +98,7 @@ function PersonPage() {
   }, [credits]);
 
   const birthday = person?.birthday
-    ? new Date(person.birthday).toLocaleDateString("tr-TR", {
+    ? new Date(person.birthday).toLocaleDateString("en-US", {
         day: "numeric",
         month: "long",
         year: "numeric",
