@@ -22,7 +22,6 @@ const tabs: { id: StatusTab; label: string }[] = [
   { id: "watched", label: "Watched" },
   { id: "watching", label: "Watching" },
   { id: "partly_watched", label: "Partly" },
-  { id: "dropped", label: "Bıraktım" },
   { id: "watchlist", label: "Watchlist" },
 ];
 
@@ -171,8 +170,8 @@ export function ProfileScreen() {
           <p className="text-lg font-bold leading-tight truncate">{name}</p>
           <p className="text-sm text-muted-foreground">@{handle}</p>
           <p className="text-xs text-muted-foreground mt-2">
-            {stats.series === 0 ? "Henüz dizi eklenmedi" : `${stats.series} dizi takip ediliyor`}
-            {memberSince ? ` · ${memberSince}'den beri üye` : ""}
+            {stats.series === 0 ? "No shows yet" : `${stats.series} shows tracked`}
+            {memberSince ? ` · member since ${memberSince}` : ""}
           </p>
         </div>
       </div>
@@ -266,7 +265,7 @@ export function ProfileScreen() {
           </div>
         ) : current.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
-            Bu listede henüz dizi yok.
+            No shows in this list yet.
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-2.5">
@@ -304,7 +303,7 @@ export function ProfileScreen() {
         <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Favorites</h2>
         {favorites.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Dizi sayfasından “Favorilere ekle”ye bastığın diziler burada görünecek.
+            Shows you favorite from a show page will appear here.
           </p>
         ) : (
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
@@ -330,13 +329,13 @@ export function ProfileScreen() {
       <section className="space-y-3">
         <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Recent Activity</h2>
         <p className="text-[11px] text-muted-foreground">
-          Sadece son {RECENT_WATCH_DAYS} günde izlediklerin — izleme yılına göre.
+          Only what you watched in the last {RECENT_WATCH_DAYS} days — by watch year.
         </p>
         {recent.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {(shows ?? []).length === 0
-              ? "Henüz aktivite yok — bir bölüm kaydettiğinde burada görünecek."
-              : "Son zamanda izlediğin bir şey yok. Eski izlemeler burada listelenmez."}
+              ? "No activity yet — log an episode and it will show up here."
+              : "Nothing watched recently. Older watches aren't listed here."}
           </p>
         ) : (
           <ul className="space-y-3">

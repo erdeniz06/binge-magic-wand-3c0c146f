@@ -79,9 +79,9 @@ export function progressLabel(s: UserShow): string | null {
   const total = s.total_episodes && s.total_episodes > 0 ? s.total_episodes : null;
   const eps = s.episodes_watched ?? 0;
   const seasons = s.seasons_logged ?? [];
-  const counts = total ? `${eps}/${total} bölüm` : `${eps} bölüm`;
-  if (s.status === "watched") return "İzledim";
-  if (s.status === "dropped") return `Bıraktım · ${counts}`;
+  const counts = total ? `${eps}/${total} eps` : `${eps} eps`;
+  if (s.status === "watched") return "Watched";
+  if (s.status === "dropped") return `Dropped · ${counts}`;
   if (s.status === "partly_watched" || s.status === "watching") {
     const seasonPart =
       seasons.length > 0

@@ -19,11 +19,11 @@ export function ListsScreen() {
         ))}
       </ul>
       <p className="text-xs text-muted-foreground pt-2">
-        Watchlist, Watched ve Favorites artık Profil sekmesinde.
+        Watchlist, Watched and Favorites now live in the Profile tab.
       </p>
 
       <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase pt-4">
-        Türlere Göre
+        By Genre
       </h2>
       <ul className="space-y-2.5">
         {GENRE_LIST_SLUGS.map((slug) => (
@@ -46,7 +46,7 @@ function GenreRow({ slug }: { slug: string }) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">{meta.title}</p>
           <p className="text-xs text-muted-foreground truncate">
-            {meta.limit ? `${meta.limit} dizi` : "TMDB"} · TMDB sıralaması
+            {meta.limit ? `${meta.limit} shows` : "TMDB"} · TMDB ranking
           </p>
         </div>
         <span className="text-muted-foreground text-lg">›</span>
@@ -80,7 +80,7 @@ function ListRow({ listKey }: { listKey: string }) {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">{meta.title}</p>
           <p className="text-xs text-muted-foreground truncate">
-            {q.isLoading ? "Yükleniyor…" : `${items.length} dizi`}
+            {q.isLoading ? "Loading…" : `${items.length} shows`}
             {meta.subtitle ? ` · ${meta.subtitle}` : ""}
           </p>
         </div>

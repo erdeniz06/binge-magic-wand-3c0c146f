@@ -41,10 +41,10 @@ const CREW_JOBS = new Set(["Creator", "Executive Producer", "Writer", "Director"
 export const Route = createFileRoute("/_authenticated/person/$id")({
   head: () => ({
     meta: [
-      { title: "Kişi — BingeBox" },
-      { name: "description", content: "Oyuncu ve yapımcı profili, dizileri ve biyografisi." },
-      { property: "og:title", content: "Kişi — BingeBox" },
-      { property: "og:description", content: "Oyuncu ve yapımcı profili, dizileri ve biyografisi." },
+      { title: "Person — BingeBox" },
+      { name: "description", content: "Actor and creator profile, shows and biography." },
+      { property: "og:title", content: "Person — BingeBox" },
+      { property: "og:description", content: "Actor and creator profile, shows and biography." },
     ],
   }),
   component: PersonPage,
@@ -111,7 +111,7 @@ function PersonPage() {
         <button
           onClick={() => router.history.back()}
           className="p-1 -ml-1 rounded-md hover:bg-muted"
-          aria-label="Geri"
+          aria-label="Back"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -123,7 +123,7 @@ function PersonPage() {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : personQ.isError || !person ? (
-        <div className="p-8 text-center text-sm text-destructive">Bir şeyler ters gitti.</div>
+        <div className="p-8 text-center text-sm text-destructive">Something went wrong.</div>
       ) : (
         <>
           <div className="px-4 pt-5 flex gap-4">
@@ -168,7 +168,7 @@ function PersonPage() {
                 onClick={() => setBioOpen((v) => !v)}
                 className="mt-1 text-xs font-semibold text-foreground"
               >
-                {bioOpen ? "Daha az" : "Devamını oku"}
+                {bioOpen ? "Show less" : "Read more"}
               </button>
             </section>
           )}
@@ -176,7 +176,7 @@ function PersonPage() {
           {knownFor.length > 0 && (
             <section className="mt-6">
               <h3 className="px-4 text-sm font-bold mb-3">
-                {person.known_for_department === "Acting" ? "Oynadığı Diziler" : "Dizileri"}
+                {person.known_for_department === "Acting" ? "Appears In" : "Shows"}
               </h3>
               <div className="px-4 grid grid-cols-3 gap-2.5">
                 {knownFor.map((c) => (
@@ -206,7 +206,7 @@ function PersonPage() {
 
           {created.length > 0 && (
             <section className="mt-6">
-              <h3 className="px-4 text-sm font-bold mb-3">Yaratıcı / Yapımcı Olarak</h3>
+              <h3 className="px-4 text-sm font-bold mb-3">As Creator / Producer</h3>
               <div className="px-4 grid grid-cols-3 gap-2.5">
                 {created.map((c) => (
                   <Link

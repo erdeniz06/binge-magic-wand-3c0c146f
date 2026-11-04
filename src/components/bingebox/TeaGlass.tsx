@@ -6,8 +6,8 @@ export function TeaGlass({ className }: { className?: string }) {
   return (
     <img
       src={teaGlass}
-      alt="Türk yapımı"
-      title="Türk yapımı"
+      alt="Turkish production"
+      title="Turkish production"
       className={cn(
         "inline-block h-5 w-5 shrink-0 object-contain drop-shadow-[0_0_6px_var(--flag)]",
         className,

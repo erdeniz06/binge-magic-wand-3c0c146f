@@ -136,7 +136,7 @@ export function LogActivityDialog({
   const submit = async () => {
     if (!meta || !mode) return;
     if (mode !== "watchlist" && watchedPeriod == null) {
-      toast.error("Hangi yıl izlediğini seç");
+      toast.error("Pick the year you watched it");
       return;
     }
     setSaving(true);
@@ -145,15 +145,15 @@ export function LogActivityDialog({
       if (mode === "watchlist") {
         await setWatchlist(meta, notify);
         toast.success(
-          notify ? `${meta.title} watchlist'e eklendi, takip açık` : `${meta.title} watchlist'e eklendi`,
+          notify ? `${meta.title} added to watchlist, tracking on` : `${meta.title} added to watchlist`,
         );
       } else if (mode === "show") {
         if (rating != null) await rateShow(meta, rating, period);
         else await logWholeShow(meta, seasons.length, period);
-        toast.success(`${meta.title} izlendi olarak işaretlendi`);
+        toast.success(`${meta.title} marked as watched`);
       } else if (mode === "season") {
         if (seasonSel.length === 0) {
-          toast.error("En az bir sezon seç");
+          toast.error("Pick at least one season");
           return;
         }
         const ordered = [...seasonSel].sort((a, b) => a - b);
@@ -167,7 +167,7 @@ export function LogActivityDialog({
         );
       } else {
         await logEpisode(meta, 1, period);
-        toast.success(`${meta.title} · 1 bölüm eklendi`);
+        toast.success(`${meta.title} · 1 episode logged`);
       }
       invalidate();
       close(false);
@@ -241,7 +241,7 @@ export function LogActivityDialog({
 
               {query.trim().length < 2 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  Aramak için en az 2 harf yaz.
+                  Type at least 2 letters to search.
                 </p>
               ) : searchQ.isLoading ? (
                 <div className="flex justify-center py-8">
@@ -249,7 +249,7 @@ export function LogActivityDialog({
                 </div>
               ) : results.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  "{query}" için sonuç yok
+                  No results for "{query}"
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -302,7 +302,7 @@ export function LogActivityDialog({
                     <div>
                       <p className="font-semibold leading-tight">{tvTitle(detail)}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {seasons.length} sezon · {detail.number_of_episodes} bölüm
+                        {seasons.length} seasons · {detail.number_of_episodes} episodes
                       </p>
                     </div>
                   </div>
@@ -310,7 +310,7 @@ export function LogActivityDialog({
                   {(mode === "season" || mode === "episode") && (
                     <div className="space-y-2">
                       <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-                        {mode === "season" ? "Sezonlar (birden fazla seçebilirsin)" : "Sezon"}
+                        {mode === "season" ? "Seasons (pick multiple)" : "Season"}
                       </p>
                       <div className="grid grid-cols-4 gap-2">
                         {seasons.map((s) => {
@@ -345,8 +345,8 @@ export function LogActivityDialog({
                       {seasonSel.length > 0 && (
                         <p className="text-xs text-muted-foreground">
                           {mode === "season"
-                            ? `${seasonSel.length} sezon seçildi · ${seasonSel.reduce((sum, n) => sum + (episodeCountBySeason[n] ?? 0), 0)} bölüm`
-                            : `S${seasonSel[0]} · ${episodeCountBySeason[seasonSel[0]]} bölüm`}
+                            ? `${seasonSel.length} seasons picked · ${seasonSel.reduce((sum, n) => sum + (episodeCountBySeason[n] ?? 0), 0)} episodes`
+                            : `S${seasonSel[0]} · ${episodeCountBySeason[seasonSel[0]]} episodes`}
                         </p>
                       )}
                     </div>
@@ -355,7 +355,7 @@ export function LogActivityDialog({
                   {mode === "show" && (
                     <div className="space-y-2">
                       <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-                        Puanın (opsiyonel)
+                        Your rating (optional)
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
@@ -375,7 +375,7 @@ export function LogActivityDialog({
                       </div>
                       <p className="text-[11px] text-muted-foreground flex items-center gap-1">
                         <Star className="w-3 h-3" />
-                        Puan verirsen dizi %100 izlendi sayılır.
+                        Rating a show counts it as 100% watched.
                       </p>
                     </div>
                   )}
@@ -417,7 +417,7 @@ export function LogActivityDialog({
                         }
                       />
                       <p className="text-[11px] text-muted-foreground">
-                        Geçmiş bir yıl seçersen bu yılki istatistiklerine sayılmaz.
+                        Picking a past year won't count toward this year's stats.
                       </p>
                     </div>
                   )}
@@ -431,7 +431,7 @@ export function LogActivityDialog({
                     }
                     className="w-full rounded-full bg-foreground text-background py-3 text-sm font-semibold disabled:opacity-50"
                   >
-                    {saving ? "Kaydediliyor…" : "Kaydet"}
+                    {saving ? "Saving…" : "Save"}
                   </button>
                 </>
               )}

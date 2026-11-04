@@ -7,7 +7,7 @@ import { TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { key: "popular", label: "Popüler" },
+  { key: "popular", label: "Popular" },
   { key: "top_rated", label: "En iyi" },
 ] as const;
 
@@ -56,15 +56,15 @@ export function BingeWatchScreen() {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : q.isError ? (
-        <p className="px-6 py-16 text-center text-sm text-destructive">Yorumlar yüklenemedi.</p>
+        <p className="px-6 py-16 text-center text-sm text-destructive">Couldn't load reviews.</p>
       ) : reviews.length === 0 ? (
         <div className="px-6 py-20 flex flex-col items-center text-center gap-3">
           <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
             <MessageSquareOff className="w-6 h-6 text-muted-foreground" />
           </div>
-          <p className="text-sm font-semibold">Şu an gösterilecek yorum yok</p>
+          <p className="text-sm font-semibold">No reviews to show</p>
           <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
-            Bu listedeki dizilere henüz yorum yazılmamış.
+            No reviews written for these shows yet.
           </p>
         </div>
       ) : (
@@ -122,7 +122,7 @@ export function BingeWatchScreen() {
                         onClick={() => setOpen(expanded ? null : r.id)}
                         className="mt-1 text-[11px] font-semibold text-foreground"
                       >
-                        {expanded ? "Daha az" : "Devamını oku"}
+                        {expanded ? "Show less" : "Read more"}
                       </button>
                     )}
                   </div>

@@ -71,13 +71,13 @@ export function PosterRow({
         {(onReachEnd || seeAllTo) && (
           <div ref={sentinelRef} className="shrink-0 w-32 flex items-center justify-center">
             {loadingMore ? (
-              <span className="text-[11px] text-muted-foreground">Yükleniyor…</span>
+              <span className="text-[11px] text-muted-foreground">Loading…</span>
             ) : seeAllTo ? (
               <Link
                 to={seeAllTo}
                 className="text-[11px] font-semibold text-muted-foreground hover:text-foreground text-center px-2"
               >
-                Tüm listeyi gör →
+                See all →
               </Link>
             ) : null}
           </div>

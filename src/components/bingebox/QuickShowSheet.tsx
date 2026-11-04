@@ -102,7 +102,7 @@ export function QuickShowSheet({
 
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5">
-              Puanın {tracked?.rating ? `· ${tracked.rating}/10` : ""}
+              Your rating {tracked?.rating ? `· ${tracked.rating}/10` : ""}
             </p>
             <div className="grid grid-cols-10 gap-1">
               {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
@@ -112,7 +112,7 @@ export function QuickShowSheet({
                   onClick={() =>
                     run(
                       () => rateShow(meta, tracked?.rating === n ? null : n, periodArg),
-                      tracked?.rating === n ? "Puan kaldırıldı" : `${n}/10 verdin`,
+                      tracked?.rating === n ? "Rating removed" : `You rated ${n}/10`,
                     )
                   }
                   className={`aspect-square rounded-md text-[11px] font-bold ring-1 transition ${
@@ -129,7 +129,7 @@ export function QuickShowSheet({
 
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-1.5">
-              Sadece birkaç bölüm izledim
+              Watched just a few episodes
             </p>
             <div className="flex flex-wrap gap-1.5">
               {[1, 2, 3, 5, 10].map((n) => (
@@ -139,7 +139,7 @@ export function QuickShowSheet({
                   onClick={() =>
                     run(
                       () => setEpisodeCount(meta, n, periodArg),
-                      `${n} bölüm izledin olarak kaydedildi`,
+                      `Logged ${n} episodes as watched`,
                     )
                   }
                   className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
@@ -148,7 +148,7 @@ export function QuickShowSheet({
                       : "ring-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {n} bölüm
+                  {n} episodes
                 </button>
               ))}
               <button
@@ -156,7 +156,7 @@ export function QuickShowSheet({
                 onClick={() =>
                   run(
                     () => setDropped(meta, !isDropped, periodArg),
-                    isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
+                    isDropped ? "Dropped mark removed" : "Marked as dropped",
                   )
                 }
                 className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ring-1 transition ${
@@ -166,7 +166,7 @@ export function QuickShowSheet({
                 }`}
               >
                 <XCircle className="w-3.5 h-3.5" />
-                {isDropped ? "Bıraktım ✓" : "Bıraktım"}
+                {isDropped ? "Dropped ✓" : "Dropped"}
               </button>
             </div>
           </div>
@@ -178,7 +178,7 @@ export function QuickShowSheet({
               onClick={() =>
                 run(
                   () => setWholeSeries(meta, !isWatched, {}, periodArg),
-                  isWatched ? "İzledim işareti kaldırıldı" : "Tümünü izledin olarak kaydedildi",
+                  isWatched ? "Watched mark removed" : "Marked it all as watched",
                 )
               }
               className={`rounded-lg px-3 py-2 text-xs font-semibold ring-1 transition ${
@@ -187,7 +187,7 @@ export function QuickShowSheet({
                   : "ring-border hover:bg-muted"
               }`}
             >
-              {isWatched ? "İzledim ✓" : "Tümünü izledim"}
+              {isWatched ? "Watched ✓" : "Watched it all"}
             </button>
             <button
               disabled={busy}
@@ -203,14 +203,14 @@ export function QuickShowSheet({
                   : "ring-border hover:bg-muted"
               }`}
             >
-              {inWatchlist ? "Listemde ✓" : "İzleyeceklerime ekle"}
+              {inWatchlist ? "In my list ✓" : "Add to watchlist"}
             </button>
             <button
               disabled={busy}
               onClick={() =>
                 run(
                   () => setFavorite(meta, !tracked?.favorite),
-                  tracked?.favorite ? "Favorilerden çıkarıldı" : "Favorilere eklendi",
+                  tracked?.favorite ? "Removed from favorites" : "Added to favorites",
                 )
               }
               className={`flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold ring-1 transition ${
@@ -228,7 +228,7 @@ export function QuickShowSheet({
               onClick={() => onOpenChange(false)}
               className="flex items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold ring-1 ring-border hover:bg-muted"
             >
-              Sezon/bölüm işaretle →
+              Mark seasons/episodes →
             </Link>
           </div>
 
@@ -236,12 +236,12 @@ export function QuickShowSheet({
             <button
               disabled={busy}
               onClick={async () => {
-                await run(() => removeShow(meta.tmdb_id), "Kayıt silindi");
+                await run(() => removeShow(meta.tmdb_id), "Entry deleted");
                 onOpenChange(false);
               }}
               className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-destructive"
             >
-              <Trash2 className="w-3.5 h-3.5" /> Kaydı sil (geri al)
+              <Trash2 className="w-3.5 h-3.5" /> Delete entry (undo)
             </button>
           ) : null}
 

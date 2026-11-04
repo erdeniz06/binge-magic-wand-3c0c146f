@@ -128,7 +128,7 @@ function ScorePanel({ score, votes }: { score: number; votes: number }) {
   return (
     <section className="mx-4 mt-4 rounded-2xl bg-card ring-1 ring-border p-4">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-        TMDB Kullanıcı Puanı
+        TMDB User Score
       </p>
       <div className="mt-1.5 flex items-end justify-between gap-3">
         <div className="flex items-baseline gap-1">
@@ -147,8 +147,8 @@ function ScorePanel({ score, votes }: { score: number; votes: number }) {
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         {has
-          ? `${votes.toLocaleString("tr-TR")} kişi puanladı`
-          : "Henüz puan yok"}
+          ? `${votes.toLocaleString("en-US")} ratings`
+          : "No ratings yet"}
       </p>
     </section>
   );
@@ -239,7 +239,7 @@ function SeriesDetailPage() {
         </div>
       ) : detailQ.isError || !detail ? (
         <div className="p-8 text-center text-sm text-destructive">
-          Bir şeyler ters gitti.
+          Something went wrong.
         </div>
       ) : (
         <>
@@ -285,7 +285,7 @@ function SeriesDetailPage() {
               <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                 <span>{detail.first_air_date?.slice(0, 4) || "—"}</span>
                 <span>· {detail.number_of_seasons} sezon</span>
-                <span>· {detail.number_of_episodes} bölüm</span>
+                <span>· {detail.number_of_episodes} episodes</span>
               </div>
             </div>
           </div>
@@ -325,7 +325,7 @@ function SeriesDetailPage() {
 
           {detail.overview && (
             <section className="px-4 mt-4">
-              <h3 className="text-sm font-bold mb-1.5">Özet</h3>
+              <h3 className="text-sm font-bold mb-1.5">Overview</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {detail.overview}
               </p>
@@ -412,7 +412,7 @@ function SeriesDetailPage() {
             ) : (
               <div className="rounded-xl bg-card ring-1 ring-border p-5 text-center">
                 <p className="text-xs text-muted-foreground">
-                  TMDB'de henüz yorum yok — yukarıdan kendi yorumunu yazabilirsin.
+                  No TMDB reviews yet — write your own above.
                 </p>
               </div>
             )}

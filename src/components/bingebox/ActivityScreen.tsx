@@ -19,14 +19,14 @@ export function ActivityScreen() {
                 tab === t ? "bg-foreground text-background" : "text-muted-foreground",
               )}
             >
-              {t === "friends" ? "Arkadaşlar" : "Sen"}
+              {t === "friends" ? "Friends" : "You"}
             </Button>
           ))}
         </div>
       </header>
 
       <p role="status" className="px-4 py-10 text-center text-sm text-muted-foreground">
-        Gösterilecek etkinlik yok.
+        No activity to show.
       </p>
     </div>
   );

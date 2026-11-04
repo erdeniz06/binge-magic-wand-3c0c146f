@@ -148,7 +148,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
     if (!def) return null;
     return {
       slug,
-      title: `${def.label} Dizileri`,
+      title: `${def.label} Shows`,
       endpoint: "/discover/tv",
       params: { sort_by: "vote_average.desc", "vote_count.gte": "1000", ...def.params },
     };
@@ -159,7 +159,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
     if (!def) return null;
     return {
       slug,
-      title: def.label === "Earlier" ? "1980 Öncesi Diziler" : `${def.label} Dizileri`,
+      title: def.label === "Earlier" ? "Pre-1980 Shows" : `${def.label} Shows`,
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",
@@ -175,7 +175,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
     if (!def) return null;
     return {
       slug,
-      title: `${def.label} Dizileri`,
+      title: `${def.label} Shows`,
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",
@@ -190,7 +190,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
     if (!def) return null;
     return {
       slug,
-      title: `${def.label} Dizileri`,
+      title: `${def.label} Shows`,
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",
@@ -205,7 +205,7 @@ export function resolveTmdbCategory(slug: string): TmdbCategory | null {
     if (!def) return null;
     return {
       slug,
-      title: `${def.label} Puanlı Diziler`,
+      title: `Shows Rated ${def.label}`,
       endpoint: "/discover/tv",
       params: {
         sort_by: "vote_average.desc",

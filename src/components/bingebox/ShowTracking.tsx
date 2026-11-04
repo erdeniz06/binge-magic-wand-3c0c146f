@@ -103,7 +103,7 @@ export function ShowTracking({
           onClick={() =>
             run(
               () => setWatchlist(meta, tracked?.notify ?? false),
-              inWatchlist ? "Watchlist güncellendi" : "Watchlist'e eklendi",
+              inWatchlist ? "Watchlist updated" : "Added to watchlist",
             )
           }
           className={cn(
@@ -121,7 +121,7 @@ export function ShowTracking({
               async () => {
                 await setWholeSeries(meta, !isWatched, episodeCountBySeason, periodArg);
               },
-              isWatched ? "Tüm dizi işareti kaldırıldı" : "Tüm diziyi izledin olarak işaretlendi",
+              isWatched ? "Whole-show mark removed" : "Marked the whole show as watched",
             )
           }
           className={cn(
@@ -130,13 +130,13 @@ export function ShowTracking({
           )}
         >
           <Check className="w-4 h-4" />
-          Tüm diziyi izledim
+          Watched the whole show
         </button>
       </div>
 
       <div className="space-y-1.5">
         <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-          Sadece birkaç bölüm
+          Just a few episodes
         </p>
         <div className="flex flex-wrap gap-1.5">
           {[1, 2, 3, 5, 10].map((n) => (
@@ -146,7 +146,7 @@ export function ShowTracking({
               onClick={() =>
                 run(
                   () => setEpisodeCount(meta, n, periodArg),
-                  `${n} bölüm izledin olarak kaydedildi`,
+                  `Logged ${n} episodes as watched`,
                 )
               }
               className={cn(
@@ -156,7 +156,7 @@ export function ShowTracking({
                   : "bg-card ring-border text-muted-foreground",
               )}
             >
-              {n} bölüm
+              {n} episodes
             </button>
           ))}
           <button
@@ -166,7 +166,7 @@ export function ShowTracking({
                 async () => {
                   await setDropped(meta, !isDropped, periodArg);
                 },
-                isDropped ? "Bıraktım işareti kaldırıldı" : "Bıraktın olarak kaydedildi",
+                isDropped ? "Dropped mark removed" : "Marked as dropped",
               )
             }
             className={cn(
@@ -177,7 +177,7 @@ export function ShowTracking({
             )}
           >
             <XCircle className="w-3.5 h-3.5" />
-            {isDropped ? "Bıraktım ✓" : "Bıraktım"}
+            {isDropped ? "Dropped ✓" : "Dropped"}
           </button>
         </div>
       </div>
@@ -191,7 +191,7 @@ export function ShowTracking({
             async () => {
               await setFavorite(meta, !isFavorite);
             },
-            isFavorite ? "Favorilerden çıkarıldı" : "Favorilere eklendi",
+            isFavorite ? "Removed from favorites" : "Added to favorites",
           )
         }
         className={cn(
@@ -209,7 +209,7 @@ export function ShowTracking({
           onClick={() =>
             run(
               () => setNotify(meta.tmdb_id, !tracked.notify),
-              tracked.notify ? "Takip kapatıldı" : "Yeni bölüm bildirimleri açık",
+              tracked.notify ? "Notifications off" : "New episode notifications on",
             )
           }
           className="w-full flex items-center justify-between rounded-xl bg-card ring-1 ring-border px-4 py-3"
@@ -254,7 +254,7 @@ export function ShowTracking({
                             await toggleSeason(meta, s.season_number, episodeCountBySeason, periodArg);
                           },
                           done
-                            ? `S${s.season_number} işareti kaldırıldı`
+                            ? `S${s.season_number} mark removed`
                             : `S${s.season_number} izlendi`,
                         )
                       }
@@ -270,12 +270,12 @@ export function ShowTracking({
                       </span>
                       <span className="text-sm font-semibold">S{s.season_number}</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {s.episode_count} bölüm
+                        {s.episode_count} episodes
                       </span>
                     </button>
                     <button
                       onClick={() => setExpanded(open ? null : s.season_number)}
-                      aria-label={`S${s.season_number} bölümlerini ${open ? "kapat" : "aç"}`}
+                      aria-label={`S${s.season_number} episodes ${open ? "collapse" : "expand"}`}
                       className="px-3 py-3 text-muted-foreground hover:text-foreground transition"
                     >
                       {open ? (
@@ -304,7 +304,7 @@ export function ShowTracking({
       )}
 
       <div className="space-y-1.5">
-        <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">Puanın</p>
+        <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">Your rating</p>
         <div className="flex flex-wrap gap-1.5">
           {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
             <button
@@ -313,7 +313,7 @@ export function ShowTracking({
               onClick={() =>
                 run(
                   () => rateShow(meta, tracked?.rating === n ? null : n),
-                  tracked?.rating === n ? "Puan kaldırıldı" : `${n}/10 verildi`,
+                  tracked?.rating === n ? "Rating removed" : `Rated ${n}/10`,
                 )
               }
               className={cn(
@@ -394,7 +394,7 @@ function SeasonEpisodes({
 
   const episodes = q.data?.episodes ?? [];
   if (episodes.length === 0) {
-    return <p className="px-3.5 pb-3 text-[11px] text-muted-foreground">Bölüm bulunamadı.</p>;
+    return <p className="px-3.5 pb-3 text-[11px] text-muted-foreground">No episodes found.</p>;
   }
 
   return (
@@ -411,7 +411,7 @@ function SeasonEpisodes({
                     await toggleEpisode(meta, season, ep.episode_number, episodeCountBySeason, period);
                   },
                   done
-                    ? `S${season}E${ep.episode_number} işareti kaldırıldı`
+                    ? `S${season}E${ep.episode_number} mark removed`
                     : `S${season}E${ep.episode_number} izlendi`,
                 )
               }
