@@ -68,9 +68,11 @@ export function ProfileScreen() {
     const year = new Date().getFullYear();
     // Watched shows count for the year they were actually finished (completed_at),
     // not when they were last edited. Watching shows count by recent activity.
+    // Counted for the year the show was actually watched (watch period /
+    // completed_at), never the year the record happened to be edited.
     const thisYear = tracked.filter((r) => {
-      const d = r.status === "watched" ? (r.completed_at ?? r.updated_at) : r.updated_at;
-      return d ? new Date(d).getFullYear() === year : false;
+      const d = watchDate(r);
+      return d ? d.getFullYear() === year : false;
     }).length;
     const rated = rows.filter((r) => r.rating != null && r.rating > 0);
     const avg = rated.length
@@ -131,8 +133,7 @@ export function ProfileScreen() {
     [shows],
   );
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = async () => {    await supabase.auth.signOut();
     navigate({ to: "/auth" });
   };
 
