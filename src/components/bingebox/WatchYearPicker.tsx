@@ -54,14 +54,14 @@ export function WatchYearPicker({
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold tracking-[0.15em] text-muted-foreground uppercase">
-          Hangi yıl(lar)da izledin?
+          Which year(s) did you watch it?
         </p>
         {value ? (
           <span className="text-[11px] font-bold text-foreground">
             {value.from === value.to ? value.from : `${value.from}–${value.to}`}
           </span>
         ) : (
-          <span className="text-[11px] font-semibold text-muted-foreground">seçili değil</span>
+          <span className="text-[11px] font-semibold text-muted-foreground">not selected</span>
         )}
       </div>
       <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
@@ -78,14 +78,14 @@ export function WatchYearPicker({
               anchor === y && "ring-2 ring-primary",
             )}
           >
-            {y === CURRENT_YEAR ? `${y} (bu yıl)` : y}
+            {y === CURRENT_YEAR ? `${y} (this year)` : y}
           </button>
         ))}
       </div>
       <p className="text-[10px] text-muted-foreground">
         {anchor != null
-          ? `Aralık için bitiş yılına dokun (başlangıç: ${anchor}) · ${anchor}'a tekrar dokunursan seçim silinir`
-          : "Bir yıla dokun, aynı yıla tekrar dokunursan seçim silinir. Aralık için ikinci bir yıla dokun (örn. 2020–2023)."}
+          ? `Tap an end year for a range (start: ${anchor}) · tap ${anchor} again to clear`
+          : "Tap a year; tap it again to clear. Tap a second year for a range (e.g. 2020–2023)."}
       </p>
     </div>
   );

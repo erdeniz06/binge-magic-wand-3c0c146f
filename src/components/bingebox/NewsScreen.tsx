@@ -6,10 +6,10 @@ function timeAgo(iso: string | null) {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.round(diff / 3600000);
-  if (h < 1) return "az önce";
-  if (h < 24) return `${h} saat önce`;
+  if (h < 1) return "just now";
+  if (h < 24) return `${h}h ago`;
   const d = Math.round(h / 24);
-  return `${d} gün önce`;
+  return `${d}d ago`;
 }
 
 export function NewsScreen() {
@@ -38,12 +38,12 @@ export function NewsScreen() {
 
       {newsQ.isError && (
         <p className="text-sm text-muted-foreground">
-          Haberler şu an yüklenemedi. Daha sonra tekrar dene.
+          News couldn't load right now. Try again later.
         </p>
       )}
 
       {!newsQ.isLoading && !newsQ.isError && items.length === 0 && (
-        <p className="text-sm text-muted-foreground">Şu an gösterilecek bir gelişme yok.</p>
+        <p className="text-sm text-muted-foreground">Nothing to show right now.</p>
       )}
 
       {items.map((item, i) => (

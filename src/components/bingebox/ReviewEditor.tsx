@@ -31,7 +31,7 @@ export function ReviewEditor({ meta }: { meta: ShowMeta }) {
       await saveReview(meta, text, stars);
       invalidate();
       setTouched(false);
-      toast.success(text.trim() ? "Yorumun kaydedildi" : "Yorumun temizlendi");
+      toast.success(text.trim() ? "Review saved" : "Review cleared");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Kaydedilemedi");
     } finally {
@@ -74,7 +74,7 @@ export function ReviewEditor({ meta }: { meta: ShowMeta }) {
           setText(e.target.value);
         }}
         rows={4}
-        placeholder="Bu dizi hakkında ne düşünüyorsun? (spoiler vermeden)"
+        placeholder="What did you think of this show? (no spoilers)"
         className="w-full rounded-lg bg-background ring-1 ring-border px-3 py-2 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-ring resize-y"
       />
       <button
@@ -83,7 +83,7 @@ export function ReviewEditor({ meta }: { meta: ShowMeta }) {
         className="flex items-center justify-center gap-2 w-full rounded-full bg-foreground text-background py-2.5 text-xs font-semibold disabled:opacity-50"
       >
         {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-        {tracked?.review ? "Yorumu güncelle" : "Yorumu kaydet"}
+        {tracked?.review ? "Update review" : "Save review"}
       </button>
     </div>
   );

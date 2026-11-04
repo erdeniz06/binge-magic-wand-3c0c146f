@@ -31,7 +31,7 @@ export function WatchProgress({
           %{pct} izlendi
           {total > 0 && (
             <span>
-              ({done ? total : episodesWatched}/{total} bölüm)
+              ({done ? total : episodesWatched}/{total} eps)
             </span>
           )}
         </p>

@@ -82,7 +82,7 @@ function SeriesMetaLines({ id, language }: { id: number; language: string }) {
   const cast = (d?.credits?.cast ?? []).slice(0, 3).map((c) => c.name).join(", ");
 
   if (q.isLoading) {
-    return <p className="text-xs text-muted-foreground">Yükleniyor…</p>;
+    return <p className="text-xs text-muted-foreground">Loading…</p>;
   }
 
   return (
@@ -167,7 +167,7 @@ export function SearchScreen() {
             </div>
           ) : results.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              "{debounced}" için sonuç bulunamadı.
+              No results for "{debounced}".
             </p>
           ) : (
             results.map((r) => {

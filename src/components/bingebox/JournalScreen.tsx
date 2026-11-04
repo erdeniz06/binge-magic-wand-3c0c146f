@@ -10,9 +10,9 @@ export function JournalScreen() {
         <div className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center">
           <NotebookPen className="w-5 h-5 text-muted-foreground" />
         </div>
-        <p className="text-sm font-semibold">Günlüğün henüz boş</p>
+        <p className="text-sm font-semibold">Your journal is empty</p>
         <p className="text-xs text-muted-foreground max-w-[260px]">
-          Bir bölüm ya da sezon kaydettiğinde notların burada tarihe göre listelenir.
+          When you log an episode or season, your notes will be listed here by date.
         </p>
       </div>
     );

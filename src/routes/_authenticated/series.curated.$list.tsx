@@ -96,7 +96,7 @@ function CuratedListPage() {
         </div>
       ) : q.isError ? (
         <div className="p-8 text-center text-sm text-destructive">
-          Bir şeyler ters gitti. Lütfen tekrar dene.
+          Something went wrong. Please try again.
         </div>
       ) : (
         <ol className="divide-y divide-border">
@@ -128,7 +128,7 @@ function CuratedListPage() {
                       <span className="font-semibold text-foreground">
                         {ratings[String(item.tmdb_id)]!.vote_average.toFixed(1)}
                       </span>
-                      <span>({formatVotes(ratings[String(item.tmdb_id)]!.vote_count)} oy)</span>
+                      <span>({formatVotes(ratings[String(item.tmdb_id)]!.vote_count)} votes)</span>
                     </p>
                   ) : null}
 
@@ -155,7 +155,7 @@ function CuratedListPage() {
                 }
                 className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ring-1 ring-border text-muted-foreground hover:text-foreground hover:bg-muted"
               >
-                Puanla
+                Rate
               </button>
             </li>
           ))}
@@ -163,7 +163,7 @@ function CuratedListPage() {
       )}
 
       {!q.isLoading && (q.data?.length ?? 0) > 0 && (
-        <p className="text-center text-xs text-muted-foreground py-6">Hepsi bu kadar 🎬</p>
+        <p className="text-center text-xs text-muted-foreground py-6">That's all 🎬</p>
       )}
 
       <QuickShowSheet meta={quick} open={!!quick} onOpenChange={(o) => !o && setQuick(null)} />

@@ -122,7 +122,7 @@ function CategoryPage() {
         <button
           onClick={() => router.history.back()}
           className="p-1 -ml-1 rounded-md hover:bg-muted"
-          aria-label="Geri"
+          aria-label="Back"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -135,7 +135,7 @@ function CategoryPage() {
         </div>
       ) : query.isError ? (
         <div className="p-8 text-center text-sm text-destructive">
-          Bir şeyler ters gitti. Lütfen tekrar dene.
+          Something went wrong. Please try again.
         </div>
       ) : (
         <ol className="divide-y divide-border">
@@ -170,11 +170,11 @@ function CategoryPage() {
                       <Star className="w-3 h-3 fill-[var(--gold)] text-[var(--gold)]" />
                       {item.vote_average?.toFixed(1) ?? "—"}
                     </span>
-                    <span>· {formatVotes(item.vote_count)} oy</span>
+                    <span>· {formatVotes(item.vote_count)} votes</span>
                   </div>
                   <UserShowChip tmdbId={item.id} />
                   <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
-                    {item.overview || "Açıklama yok."}
+                    {item.overview || "No description."}
                   </p>
                 </div>
               </Link>
@@ -192,7 +192,7 @@ function CategoryPage() {
                 }
                 className="self-start shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ring-1 ring-border text-muted-foreground hover:text-foreground hover:bg-muted"
               >
-                Puanla
+                Rate
               </button>
             </li>
           ))}
@@ -208,7 +208,7 @@ function CategoryPage() {
       )}
 
       {!query.isLoading && !query.hasNextPage && items.length > 0 && (
-        <p className="text-center text-xs text-muted-foreground py-6">Hepsi bu kadar 🎬</p>
+        <p className="text-center text-xs text-muted-foreground py-6">That's all 🎬</p>
       )}
 
       <QuickShowSheet meta={quick} open={!!quick} onOpenChange={(o) => !o && setQuick(null)} />

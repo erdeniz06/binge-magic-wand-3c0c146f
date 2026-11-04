@@ -12,9 +12,9 @@ import { clearAiHistory, loadAiHistory } from "@/lib/ai-history.functions";
 import { toast } from "sonner";
 
 const STARTERS = [
-  "Bu hafta sonu için 3 dizi öner",
-  "Severance'ı sevdiysem ne izlemeliyim?",
-  "Kısa (8 bölümlük) bir Türk dizisi öner",
+  "Suggest 3 shows for this weekend",
+  "I loved Severance — what should I watch next?",
+  "Suggest a short (8-episode) Turkish series",
   "Recommend a feel-good comedy",
 ];
 
@@ -80,7 +80,7 @@ function ChatBody({ initialMessages }: { initialMessages: UIMessage[] }) {
         return fetch(url, { ...init, headers });
       },
     }),
-    onError: (err) => toast.error(err.message || "AI hatası"),
+    onError: (err) => toast.error(err.message || "AI error"),
   });
 
   const busy = status === "submitted" || status === "streaming";
@@ -104,9 +104,9 @@ function ChatBody({ initialMessages }: { initialMessages: UIMessage[] }) {
               <div className="mx-auto w-14 h-14 rounded-2xl bg-ai-gradient shadow-ai flex items-center justify-center">
                 <Sparkles className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-lg font-semibold">Sana özel dizi tavsiyesi</h3>
+              <h3 className="text-lg font-semibold">Personalized show picks</h3>
               <p className="text-sm text-muted-foreground px-6">
-                İzleme geçmişin, watchlist'in ve favori türlerine göre konuşalım.
+                Let's talk based on your watch history, watchlist and favorite genres.
               </p>
             </div>
             <div className="grid gap-2">
@@ -153,7 +153,7 @@ function ChatBody({ initialMessages }: { initialMessages: UIMessage[] }) {
             <div className="w-8 h-8 rounded-xl bg-ai-gradient shadow-ai flex items-center justify-center">
               <Wand2 className="w-4 h-4 text-white" />
             </div>
-            Düşünüyor…
+            Thinking…
           </div>
         )}
       </div>
