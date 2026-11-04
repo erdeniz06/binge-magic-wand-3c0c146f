@@ -133,7 +133,19 @@ export function ProfileScreen() {
     [shows],
   );
 
-  const signOut = async () => {    await supabase.auth.signOut();
+  // Only shows actually watched in the last few weeks — a record edited
+  // today for something watched years ago does not belong here.
+  const recent = useMemo(
+    () =>
+      (shows ?? [])
+        .filter(isRecentWatch)
+        .sort((a, b) => +watchDate(b)! - +watchDate(a)!)
+        .slice(0, 5),
+    [shows],
+  );
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
     navigate({ to: "/auth" });
   };
 
