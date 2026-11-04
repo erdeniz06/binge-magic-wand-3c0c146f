@@ -329,40 +329,44 @@ export function ProfileScreen() {
 
       <section className="space-y-3">
         <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Recent Activity</h2>
-        {(shows ?? []).length === 0 ? (
+        <p className="text-[11px] text-muted-foreground">
+          Sadece son {RECENT_WATCH_DAYS} günde izlediklerin — izleme yılına göre.
+        </p>
+        {recent.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Henüz aktivite yok — bir bölüm kaydettiğinde burada görünecek.
+            {(shows ?? []).length === 0
+              ? "Henüz aktivite yok — bir bölüm kaydettiğinde burada görünecek."
+              : "Son zamanda izlediğin bir şey yok. Eski izlemeler burada listelenmez."}
           </p>
         ) : (
           <ul className="space-y-3">
-            {(shows ?? [])
-              .slice()
-              .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))
-              .slice(0, 5)
-              .map((s) => (
-                <li key={s.tmdb_id}>
-                  <Link
-                    to="/series/tv/$id"
-                    params={{ id: String(s.tmdb_id) }}
-                    className="flex items-center gap-3"
-                  >
-                    {s.poster_path ? (
-                      <img src={`${TMDB_IMG}${s.poster_path}`} alt="" className="w-10 h-14 rounded-md object-cover" />
-                    ) : (
-                      <div className="w-10 h-14 rounded-md bg-secondary" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{s.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {progressLabel(s) ?? s.status}
-                      </p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(s.updated_at).toLocaleDateString()}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+            {recent.map((s) => (
+              <li key={s.tmdb_id}>
+                <Link
+                  to="/series/tv/$id"
+                  params={{ id: String(s.tmdb_id) }}
+                  className="flex items-center gap-3"
+                >
+                  {s.poster_path ? (
+                    <img src={`${TMDB_IMG}${s.poster_path}`} alt="" className="w-10 h-14 rounded-md object-cover" />
+                  ) : (
+                    <div className="w-10 h-14 rounded-md bg-secondary" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{s.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {progressLabel(s) ?? s.status}
+                    </p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {watchDate(s)!.toLocaleDateString("tr-TR", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         )}
       </section>
