@@ -112,6 +112,33 @@ export function isSeasonLogged(
   return true;
 }
 
+/** How far back a watch still counts as "recent" on the profile. */
+export const RECENT_WATCH_DAYS = 60;
+
+/**
+ * When the show was actually watched — not when its record was last edited.
+ * The watch period the user picked wins; a period in a past year stays in
+ * that year even if the entry was typed in today.
+ */
+export function watchDate(s: UserShow): Date | null {
+  if (s.completed_at) return new Date(s.completed_at);
+  const to = s.watched_to ?? s.watched_from;
+  if (to != null) {
+    const now = new Date();
+    return to === now.getFullYear()
+      ? new Date(s.updated_at)
+      : new Date(Date.UTC(to, 11, 15, 12));
+  }
+  return new Date(s.updated_at);
+}
+
+/** True when the watch itself happened recently, not just the record edit. */
+export function isRecentWatch(s: UserShow, days = RECENT_WATCH_DAYS) {
+  const d = watchDate(s);
+  if (!d || isNaN(+d)) return false;
+  return Date.now() - d.getTime() <= days * 86_400_000;
+}
+
 async function currentUserId() {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("Not signed in");
