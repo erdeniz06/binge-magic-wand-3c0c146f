@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Settings, LogOut, Star } from "lucide-react";
+import { Settings, LogOut, Star, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AddToCategoryDialog } from "./AddToCategoryDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -10,13 +12,14 @@ import {
   watchDate,
   RECENT_WATCH_DAYS,
   type UserShow,
+  type ProfileShowStatus,
 } from "@/lib/user-shows";
 
 
 const DEFAULT_RUNTIME = 45;
 const TMDB_IMG = "https://image.tmdb.org/t/p/w200";
 
-type StatusTab = "watched" | "watching" | "partly_watched" | "dropped" | "watchlist";
+type StatusTab = ProfileShowStatus;
 
 const tabs: { id: StatusTab; label: string }[] = [
   { id: "watched", label: "Watched" },
@@ -32,6 +35,7 @@ export function ProfileScreen() {
   const [memberSince, setMemberSince] = useState<string | null>(null);
   const { data: shows } = useUserShows();
   const [tab, setTab] = useState<StatusTab>("watched");
+  const [addingTo, setAddingTo] = useState<StatusTab | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -241,19 +245,22 @@ export function ProfileScreen() {
       )}
 
       <section className="space-y-3">
-        <div className="flex gap-1 rounded-xl bg-secondary p-1">
+        <div className="grid grid-cols-4 gap-1 rounded-lg bg-secondary p-1">
           {tabs.map((t) => (
-            <button
+            <div
               key={t.id}
-              onClick={() => setTab(t.id)}
               className={cn(
-                "flex-1 rounded-lg py-2 text-xs font-semibold transition-colors",
+                "min-w-0 rounded-md flex flex-col items-center transition-colors",
                 tab === t.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground",
               )}
             >
-              {t.label}
-              <span className="ml-1 text-muted-foreground">{byStatus[t.id].length}</span>
-            </button>
+              <Button variant="ghost" onClick={() => setTab(t.id)} aria-pressed={tab === t.id} className="w-full h-8 px-0 text-[11px] gap-1">
+                {t.label}<span className="text-muted-foreground">{byStatus[t.id].length}</span>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7 mb-1" aria-label={`Add to ${t.label}`} title={`Add to ${t.label}`} onClick={() => { setTab(t.id); setAddingTo(t.id); }}>
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           ))}
         </div>
 
@@ -369,6 +376,7 @@ export function ProfileScreen() {
           </ul>
         )}
       </section>
+      {addingTo && <AddToCategoryDialog key={addingTo} status={addingTo} onClose={() => setAddingTo(null)} />}
     </div>
   );
 }

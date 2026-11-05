@@ -9,6 +9,8 @@ export type UserShowStatus =
   | "watched"
   | "dropped";
 
+export type ProfileShowStatus = "watched" | "watching" | "partly_watched" | "watchlist";
+
 export type UserShow = {
   tmdb_id: number;
   title: string;
@@ -434,6 +436,27 @@ export async function setWatchlist(meta: ShowMeta, notify: boolean, period?: Wat
         ? prev.status
         : "watchlist",
     completed_at: prev?.completed_at ?? null,
+  });
+}
+
+/** Explicit profile category assignment updates the unique existing show entry. */
+export async function assignShowCategory(
+  meta: ShowMeta,
+  status: ProfileShowStatus,
+  period?: WatchPeriod,
+) {
+  const prev = await existing(meta.tmdb_id);
+  await save({
+    ...base(meta, prev, period),
+    status,
+    episodes_logged: prev?.episodes_logged ?? [],
+    seasons_logged: prev?.seasons_logged ?? [],
+    episodes_watched: status === "watched"
+      ? (meta.total_episodes ?? prev?.total_episodes ?? prev?.episodes_watched ?? 0)
+      : (prev?.episodes_watched ?? 0),
+    completed_at: status === "watched"
+      ? (periodDate(period, prev)?.toISOString() ?? prev?.completed_at ?? null)
+      : null,
   });
 }
 
