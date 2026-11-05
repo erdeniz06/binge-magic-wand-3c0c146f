@@ -23,6 +23,10 @@ export const Route = createFileRoute("/_authenticated/series/tv/$id")({
     meta: [
       { title: "Series — BingeBox" },
       { name: "description", content: "TV series details on BingeBox" },
+      { property: "og:title", content: "Series — BingeBox" },
+      { property: "og:description", content: "Explore TV series details, ratings and reviews on BingeBox." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SeriesDetailPage,

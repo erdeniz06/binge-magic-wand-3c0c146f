@@ -13,6 +13,10 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in · BingeBox" },
       { name: "description", content: "Sign in to BingeBox — track, discover and discuss TV series." },
+      { property: "og:title", content: "Sign in · BingeBox" },
+      { property: "og:description", content: "Sign in to BingeBox — track, discover and discuss TV series." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
