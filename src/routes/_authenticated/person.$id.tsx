@@ -45,6 +45,8 @@ export const Route = createFileRoute("/_authenticated/person/$id")({
       { name: "description", content: "Actor and creator profile, shows and biography." },
       { property: "og:title", content: "Person — BingeBox" },
       { property: "og:description", content: "Actor and creator profile, shows and biography." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PersonPage,

@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/")({
       { name: "description", content: "BingeBox is a TV series tracking, discovery and social platform with AI-powered recommendations." },
       { property: "og:title", content: "BingeBox" },
       { property: "og:description", content: "Track, discover and discuss TV series with AI-powered recommendations." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BingeBoxApp,

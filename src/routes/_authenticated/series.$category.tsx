@@ -29,6 +29,9 @@ export const Route = createFileRoute("/_authenticated/series/$category")({
         { title },
         { name: "description", content: cat?.title ?? "Browse TV series on BingeBox" },
         { property: "og:title", content: title },
+        { property: "og:description", content: cat?.title ?? "Browse TV series on BingeBox" },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
       ],
     };
   },
