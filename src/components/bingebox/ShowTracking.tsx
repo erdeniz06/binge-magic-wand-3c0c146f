@@ -13,9 +13,9 @@ import {
   setNotify,
   setWatchlist,
   setWholeSeries,
+  setSeasonsLogged,
   toggleEpisode,
-  toggleSeason,
-  type ShowMeta,
+    type ShowMeta,
   type WatchPeriod,
   setWatchPeriod,
   useInvalidateUserShows,
@@ -40,6 +40,8 @@ export function ShowTracking({
   const tracked = map.get(meta.tmdb_id);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
+  // Drag-to-select seasons: press a season's tick, drag down/up to cover a range.
+  const [drag, setDrag] = useState<{ start: number; end: number; on: boolean } | null>(null);
   const currentYear = new Date().getFullYear();
   // Watch period is remembered per show: reopening shows what was saved.
   const storedPeriod: WatchPeriod | null = tracked?.watched_from
@@ -237,36 +239,78 @@ export function ShowTracking({
       {realSeasons.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-            Sezonlar
+            Seasons
           </p>
-          <div className="space-y-1.5">
+          <p className="text-[11px] text-muted-foreground">
+            Tip: press a season's box and drag down to mark several seasons at once.
+          </p>
+          <div
+            className="space-y-1.5"
+            onPointerMove={(e) => {
+              if (!drag) return;
+              const el = document
+                .elementFromPoint(e.clientX, e.clientY)
+                ?.closest("[data-season]") as HTMLElement | null;
+              const n = el ? Number(el.dataset.season) : NaN;
+              if (!Number.isNaN(n) && n !== drag.end) setDrag({ ...drag, end: n });
+            }}
+            onPointerUp={() => {
+              if (!drag) return;
+              const d = drag;
+              setDrag(null);
+              const lo = Math.min(d.start, d.end);
+              const hi = Math.max(d.start, d.end);
+              const list = realSeasons
+                .map((x) => x.season_number)
+                .filter((n) => n >= lo && n <= hi);
+              run(
+                () => setSeasonsLogged(meta, list, d.on, episodeCountBySeason, periodArg),
+                list.length === 1
+                  ? d.on
+                    ? `S${lo} watched`
+                    : `S${lo} mark removed`
+                  : d.on
+                    ? `S${lo}–S${hi} watched`
+                    : `S${lo}–S${hi} marks removed`,
+              );
+            }}
+            onPointerCancel={() => setDrag(null)}
+          >
             {realSeasons.map((s) => {
               const done = isSeasonLogged(tracked, s.season_number, s.episode_count);
               const open = expanded === s.season_number;
+              const inDrag =
+                !!drag &&
+                s.season_number >= Math.min(drag.start, drag.end) &&
+                s.season_number <= Math.max(drag.start, drag.end);
+              const shownDone = inDrag ? drag!.on : done;
               return (
-                <div key={s.season_number} className="rounded-xl bg-card ring-1 ring-border">
+                <div
+                  key={s.season_number}
+                  data-season={s.season_number}
+                  className={cn(
+                    "rounded-xl bg-card ring-1 ring-border transition",
+                    inDrag && "ring-2 ring-foreground",
+                  )}
+                >
                   <div className="flex items-center">
                     <button
                       disabled={busy}
-                      onClick={() =>
-                        run(
-                          async () => {
-                            await toggleSeason(meta, s.season_number, episodeCountBySeason, periodArg);
-                          },
-                          done
-                            ? `S${s.season_number} mark removed`
-                            : `S${s.season_number} izlendi`,
-                        )
-                      }
-                      className="flex-1 flex items-center gap-2.5 px-3.5 py-3 text-left disabled:opacity-50"
+                      onPointerDown={(e) => {
+                        if (busy) return;
+                        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+                        setDrag({ start: s.season_number, end: s.season_number, on: !done });
+                      }}
+                      style={{ touchAction: "none" }}
+                      className="flex-1 flex items-center gap-2.5 px-3.5 py-3 text-left select-none disabled:opacity-50"
                     >
                       <span
                         className={cn(
                           "w-6 h-6 rounded-md grid place-items-center text-[11px] font-bold shrink-0",
-                          done ? "bg-foreground text-background" : "bg-muted text-muted-foreground",
+                          shownDone ? "bg-foreground text-background" : "bg-muted text-muted-foreground",
                         )}
                       >
-                        {done ? <Check className="w-3.5 h-3.5" /> : s.season_number}
+                        {shownDone ? <Check className="w-3.5 h-3.5" /> : s.season_number}
                       </span>
                       <span className="text-sm font-semibold">S{s.season_number}</span>
                       <span className="text-[11px] text-muted-foreground">

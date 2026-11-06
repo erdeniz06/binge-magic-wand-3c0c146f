@@ -285,6 +285,23 @@ export async function toggleSeason(
   return !all;
 }
 
+/** Mark (or unmark) several seasons at once — used by drag-to-select. */
+export async function setSeasonsLogged(
+  meta: ShowMeta,
+  seasons: number[],
+  on: boolean,
+  episodeCountBySeason: Record<number, number>,
+  period?: WatchPeriod,
+) {
+  const prev = await existing(meta.tmdb_id);
+  const keys = seasons.flatMap((s) =>
+    Array.from({ length: episodeCountBySeason[s] ?? 0 }, (_, i) => epKey(s, i + 1)),
+  );
+  const current = prev?.episodes_logged ?? [];
+  const next = on ? [...current, ...keys] : current.filter((k) => !keys.includes(k));
+  await persistEpisodes(meta, next, episodeCountBySeason, period);
+}
+
 /**
  * Explicit "watched the entire series" mark, independent from episode logs.
  * Turning it off falls back to whatever episodes are still logged.
