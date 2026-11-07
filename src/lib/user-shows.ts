@@ -25,6 +25,8 @@ export type UserShow = {
   episodes_logged: string[];
   review: string | null;
   favorite: boolean;
+  /** User-chosen position in the profile Favorites list (1 = first). */
+  favorite_rank: number | null;
   completed_at: string | null;
   watched_from: number | null;
   watched_to: number | null;
@@ -35,7 +37,7 @@ export type UserShow = {
 export type WatchPeriod = { from: number; to: number };
 
 const SELECT =
-  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, completed_at, watched_from, watched_to, updated_at";
+  "tmdb_id, title, poster_path, status, episodes_watched, total_episodes, episode_runtime, rating, notify, seasons_logged, episodes_logged, review, favorite, favorite_rank, completed_at, watched_from, watched_to, updated_at";
 
 export const USER_SHOWS_KEY = ["user_shows"] as const;
 
@@ -60,6 +62,37 @@ export function useUserShowMap() {
 export function useInvalidateUserShows() {
   const qc = useQueryClient();
   return () => qc.invalidateQueries({ queryKey: USER_SHOWS_KEY });
+}
+
+/**
+ * Favorites in the order the user gave them: hand-ranked first (1, 2, 3…),
+ * then anything never ranked, newest first.
+ */
+export function sortFavorites(rows: UserShow[]): UserShow[] {
+  return rows
+    .filter((r) => r.favorite)
+    .sort((a, b) => {
+      const ar = a.favorite_rank ?? null;
+      const br = b.favorite_rank ?? null;
+      if (ar != null && br != null && ar !== br) return ar - br;
+      if (ar != null && br == null) return -1;
+      if (ar == null && br != null) return 1;
+      return +new Date(b.updated_at) - +new Date(a.updated_at);
+    });
+}
+
+/** Persist the user's own Favorites order — first id in the array is number 1. */
+export async function setFavoriteOrder(orderedIds: number[]) {
+  const results = await Promise.all(
+    orderedIds.map((tmdb_id, i) =>
+      supabase
+        .from("user_shows")
+        .update({ favorite_rank: i + 1 } as never)
+        .eq("tmdb_id", tmdb_id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export type ShowMeta = {
@@ -483,6 +516,9 @@ export async function setFavorite(meta: ShowMeta, favorite: boolean, period?: Wa
   await save({
     ...base(meta, prev, period),
     favorite,
+    // Un-favoriting drops the show out of the order so re-adding it starts
+    // at the end instead of resurrecting an old position.
+    favorite_rank: favorite ? (prev?.favorite_rank ?? null) : null,
     episodes_logged: prev?.episodes_logged ?? [],
     seasons_logged: prev?.seasons_logged ?? [],
     episodes_watched: prev?.episodes_watched ?? 0,

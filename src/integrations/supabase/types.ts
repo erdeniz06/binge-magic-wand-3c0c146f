@@ -166,6 +166,7 @@ export type Database = {
           episodes_logged: string[]
           episodes_watched: number
           favorite: boolean
+          favorite_rank: number | null
           id: string
           notify: boolean
           poster_path: string | null
@@ -188,6 +189,7 @@ export type Database = {
           episodes_logged?: string[]
           episodes_watched?: number
           favorite?: boolean
+          favorite_rank?: number | null
           id?: string
           notify?: boolean
           poster_path?: string | null
@@ -210,6 +212,7 @@ export type Database = {
           episodes_logged?: string[]
           episodes_watched?: number
           favorite?: boolean
+          favorite_rank?: number | null
           id?: string
           notify?: boolean
           poster_path?: string | null
