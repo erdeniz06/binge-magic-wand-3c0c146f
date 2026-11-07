@@ -8,7 +8,6 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { restrictToParentElement } from "@dnd-kit/modifiers";
 import {
   SortableContext,
   arrayMove,
@@ -78,7 +77,6 @@ export function FavoriteOrderEditor({
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        modifiers={[restrictToParentElement]}
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={items.map((s) => s.tmdb_id)} strategy={rectSortingStrategy}>
