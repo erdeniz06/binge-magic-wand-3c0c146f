@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { Settings, LogOut, Star, Plus } from "lucide-react";
+import { Settings, LogOut, Star, Plus, GripVertical, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddToCategoryDialog } from "./AddToCategoryDialog";
+import { FavoriteOrderEditor } from "./FavoriteOrderEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
   isRecentWatch,
   progressLabel,
+  setFavoriteOrder,
+  sortFavorites,
+  useInvalidateUserShows,
   useUserShows,
   watchDate,
   RECENT_WATCH_DAYS,
