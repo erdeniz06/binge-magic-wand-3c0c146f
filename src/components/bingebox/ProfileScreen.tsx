@@ -311,7 +311,7 @@ export function ProfileScreen() {
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
           <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">
             Favorites
           </h2>
@@ -319,7 +319,7 @@ export function ProfileScreen() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 gap-1 px-2 text-[11px]"
+              className="h-6 gap-1 px-1.5 text-[11px] normal-case tracking-normal text-[var(--gold)]"
               aria-pressed={reordering}
               onClick={() => setReordering((v) => !v)}
             >
@@ -328,7 +328,7 @@ export function ProfileScreen() {
               ) : (
                 <GripVertical className="h-3.5 w-3.5" />
               )}
-              {reordering ? "Done" : "Reorder"}
+              {reordering ? "Done" : "Put them in order"}
             </Button>
           )}
         </div>
