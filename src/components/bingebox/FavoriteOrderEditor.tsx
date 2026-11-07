@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -34,6 +34,13 @@ export function FavoriteOrderEditor({
   onOrdered: (ids: number[]) => Promise<void>;
 }) {
   const [items, setItems] = useState<UserShow[]>(shows);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Bring the whole grid into view on open: a drag that starts at the bottom
+  // screen edge would otherwise scroll the page out from under itself.
+  useEffect(() => {
+    gridRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, []);
 
   // Keep the order the user is dragging, but pick up favorites that were
   // added or removed on a show page while this editor was open.
@@ -77,10 +84,14 @@ export function FavoriteOrderEditor({
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        autoScroll={false}
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={items.map((s) => s.tmdb_id)} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-4 gap-2.5 rounded-2xl border border-dashed border-border bg-secondary/40 p-3">
+          <div
+            ref={gridRef}
+            className="grid grid-cols-4 gap-2.5 rounded-2xl border border-dashed border-border bg-secondary/40 p-3"
+          >
             {items.map((s, i) => (
               <SortablePoster key={s.tmdb_id} show={s} rank={i + 1} />
             ))}
