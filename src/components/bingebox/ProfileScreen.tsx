@@ -38,8 +38,10 @@ export function ProfileScreen() {
   const [handle, setHandle] = useState("username");
   const [memberSince, setMemberSince] = useState<string | null>(null);
   const { data: shows } = useUserShows();
+  const invalidate = useInvalidateUserShows();
   const [tab, setTab] = useState<StatusTab>("watched");
   const [addingTo, setAddingTo] = useState<StatusTab | null>(null);
+  const [reordering, setReordering] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -131,14 +133,12 @@ export function ProfileScreen() {
     } as Record<StatusTab, UserShow[]>;
   }, [shows]);
 
-  const favorites = useMemo(
-    () =>
-      (shows ?? [])
-        .filter((r) => r.favorite)
-        .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))
-        .slice(0, 20),
-    [shows],
-  );
+  const favorites = useMemo(() => sortFavorites(shows ?? []), [shows]);
+
+  const saveFavoriteOrder = async (ids: number[]) => {
+    await setFavoriteOrder(ids);
+    invalidate();
+  };
 
   // Only shows actually watched in the last few weeks — a record edited
   // today for something watched years ago does not belong here.
@@ -311,26 +311,61 @@ export function ProfileScreen() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">Favorites</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">
+            Favorites
+          </h2>
+          {favorites.length > 1 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 px-2 text-[11px]"
+              aria-pressed={reordering}
+              onClick={() => setReordering((v) => !v)}
+            >
+              {reordering ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : (
+                <GripVertical className="h-3.5 w-3.5" />
+              )}
+              {reordering ? "Done" : "Reorder"}
+            </Button>
+          )}
+        </div>
+
         {favorites.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Shows you favorite from a show page will appear here.
           </p>
+        ) : reordering ? (
+          <FavoriteOrderEditor shows={favorites} onOrdered={saveFavoriteOrder} />
         ) : (
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar">
-            {favorites.map((f) => (
+            {favorites.map((f, i) => (
               <Link
                 key={f.tmdb_id}
                 to="/series/tv/$id"
                 params={{ id: String(f.tmdb_id) }}
                 className="shrink-0"
               >
-                <img
-                  src={`${TMDB_IMG}${f.poster_path}`}
-                  className="w-20 h-28 rounded-lg object-cover"
-                  alt={f.title}
-                  loading="lazy"
-                />
+                <div className="relative">
+                  {f.poster_path ? (
+                    <img
+                      src={`${TMDB_IMG}${f.poster_path}`}
+                      className="w-20 h-28 rounded-lg object-cover"
+                      alt={f.title}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-20 h-28 rounded-lg bg-secondary" />
+                  )}
+                  <span
+                    className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-background/90 text-[10px] font-bold text-foreground"
+                    title={`Favorite #${i + 1}`}
+                  >
+                    {i + 1}
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
