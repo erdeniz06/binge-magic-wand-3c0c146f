@@ -1,8 +1,11 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ChevronLeft, Loader2, MapPin, Cake } from "lucide-react";
 import { getTvShows } from "@/lib/tmdb.functions";
+import { getPersonRatings, setPersonRating, OVERALL } from "@/lib/person-ratings";
+import { PersonRatingStars } from "@/components/bingebox/PersonRatingStars";
+import { toast } from "sonner";
 
 const PROFILE_IMG = "https://image.tmdb.org/t/p/w300";
 const POSTER_IMG = "https://image.tmdb.org/t/p/w200";
@@ -71,6 +74,29 @@ function PersonPage() {
       getTvShows({ data: { endpoint: `/person/${id}/tv_credits`, language } }) as Promise<unknown>,
     staleTime: 1000 * 60 * 60,
   });
+
+  const qc = useQueryClient();
+  const ratingsKey = ["person-ratings", id];
+  const ratingsQ = useQuery({
+    queryKey: ratingsKey,
+    queryFn: () => getPersonRatings(Number(id)),
+  });
+  const ratings = ratingsQ.data ?? {};
+  const [rateTarget, setRateTarget] = useState<{ id: number; name: string } | null>(null);
+  const rate = async (showId: number, v: number | null, title?: string) => {
+    qc.setQueryData(ratingsKey, (old: Record<number, number> | undefined) => {
+      const n = { ...(old ?? {}) };
+      if (v == null) delete n[showId];
+      else n[showId] = v;
+      return n;
+    });
+    try {
+      await setPersonRating(Number(id), showId, v, title);
+    } catch {
+      toast.error("Couldn't save rating");
+      qc.invalidateQueries({ queryKey: ratingsKey });
+    }
+  };
 
   const person = personQ.data as Person | undefined;
   const credits = creditsQ.data as Credits | undefined;
@@ -154,9 +180,27 @@ function PersonPage() {
             </div>
           </div>
 
+          <section className="mx-4 mt-5 rounded-xl bg-card ring-1 ring-border p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold">Your overall rating</h3>
+              <span className="text-lg font-bold text-primary">
+                {ratings[OVERALL] != null ? `${ratings[OVERALL]}/10` : "—"}
+              </span>
+            </div>
+            <div className="mt-2">
+              <PersonRatingStars
+                value={ratings[OVERALL] ?? null}
+                onChange={(v) => rate(OVERALL, v)}
+              />
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Optional. Rate their performance in each show below with “Rate”.
+            </p>
+          </section>
+
           {person.biography && (
             <section className="px-4 mt-5">
-              <h3 className="text-sm font-bold mb-1.5">Biyografi</h3>
+              <h3 className="text-sm font-bold mb-1.5">Biography</h3>
               <p
                 className={
                   bioOpen
@@ -200,6 +244,17 @@ function PersonPage() {
                         {c.character}
                       </p>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setRateTarget({ id: c.id, name: c.name });
+                      }}
+                      className="mt-0.5 w-full rounded-md bg-muted px-1.5 py-1 text-[10px] font-semibold"
+                    >
+                      {ratings[c.id] != null ? `★ ${ratings[c.id]}/10` : "Rate"}
+                    </button>
                   </Link>
                 ))}
               </div>
@@ -239,6 +294,37 @@ function PersonPage() {
             </div>
           )}
         </>
+      )}
+
+      {rateTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-background/70"
+          onClick={() => setRateTarget(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-t-2xl bg-card ring-1 ring-border p-5 pb-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-xs text-muted-foreground">Rate {person?.name}'s performance in</p>
+            <h3 className="text-base font-bold">{rateTarget.name}</h3>
+            <div className="mt-3 flex items-center justify-between">
+              <PersonRatingStars
+                size="w-6 h-6"
+                value={ratings[rateTarget.id] ?? null}
+                onChange={(v) => rate(rateTarget.id, v, rateTarget.name)}
+              />
+            </div>
+            <p className="mt-2 text-sm font-semibold text-primary">
+              {ratings[rateTarget.id] != null ? `${ratings[rateTarget.id]}/10` : "Not rated"}
+            </p>
+            <button
+              onClick={() => setRateTarget(null)}
+              className="mt-4 w-full rounded-lg bg-primary py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Done
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
