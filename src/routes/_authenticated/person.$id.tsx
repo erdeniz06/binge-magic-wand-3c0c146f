@@ -82,6 +82,12 @@ function PersonPage() {
     queryFn: () => getPersonRatings(Number(id)),
   });
   const ratings = ratingsQ.data ?? {};
+  const showRatings = Object.entries(ratings)
+    .filter(([k]) => Number(k) !== OVERALL)
+    .map(([, v]) => v);
+  const avg = showRatings.length
+    ? showRatings.reduce((x, y) => x + y, 0) / showRatings.length
+    : null;
   const [rateTarget, setRateTarget] = useState<{ id: number; name: string } | null>(null);
   const rate = async (showId: number, v: number | null, title?: string) => {
     qc.setQueryData(ratingsKey, (old: Record<number, number> | undefined) => {
@@ -184,17 +190,13 @@ function PersonPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold">Your overall rating</h3>
               <span className="text-lg font-bold text-primary">
-                {ratings[OVERALL] != null ? `${ratings[OVERALL]}/10` : "—"}
+                {avg != null ? `${avg.toFixed(1)}/10` : "—"}
               </span>
             </div>
-            <div className="mt-2">
-              <PersonRatingStars
-                value={ratings[OVERALL] ?? null}
-                onChange={(v) => rate(OVERALL, v)}
-              />
-            </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              Optional. Rate their performance in each show below with “Rate”.
+              {showRatings.length > 0
+                ? `Average of your ${showRatings.length} show rating${showRatings.length > 1 ? "s" : ""}.`
+                : "Rate their performance in shows below with “Rate” — your overall is the average."}
             </p>
           </section>
 
