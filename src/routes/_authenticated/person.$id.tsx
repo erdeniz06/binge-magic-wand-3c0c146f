@@ -143,7 +143,7 @@ function PersonPage() {
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-md pb-32">
       <header className="sticky top-0 z-10 bg-background/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <button
-          onClick={() => router.history.back()}
+          onClick={() => (window.history.length > 1 ? router.history.back() : router.navigate({ to: "/" }))}
           className="p-1 -ml-1 rounded-md hover:bg-muted"
           aria-label="Back"
         >
@@ -300,7 +300,7 @@ function PersonPage() {
 
       {rateTarget && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-background/70"
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-background/70"
           onClick={() => setRateTarget(null)}
         >
           <div
@@ -319,9 +319,17 @@ function PersonPage() {
             <p className="mt-2 text-sm font-semibold text-primary">
               {ratings[rateTarget.id] != null ? `${ratings[rateTarget.id]}/10` : "Not rated"}
             </p>
+            {ratings[rateTarget.id] != null && (
+              <button
+                onClick={() => rate(rateTarget.id, null)}
+                className="mt-3 w-full rounded-lg bg-muted py-2 text-sm font-semibold"
+              >
+                Remove rating
+              </button>
+            )}
             <button
               onClick={() => setRateTarget(null)}
-              className="mt-4 w-full rounded-lg bg-primary py-2 text-sm font-semibold text-primary-foreground"
+              className="mt-2 w-full rounded-lg bg-primary py-2 text-sm font-semibold text-primary-foreground"
             >
               Done
             </button>
