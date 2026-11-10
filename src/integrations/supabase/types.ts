@@ -107,6 +107,39 @@ export type Database = {
         }
         Relationships: []
       }
+      person_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          person_id: number
+          rating: number
+          show_id: number
+          show_title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          person_id: number
+          rating: number
+          show_id?: number
+          show_title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          person_id?: number
+          rating?: number
+          show_id?: number
+          show_title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           country: string | null

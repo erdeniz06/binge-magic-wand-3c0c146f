@@ -8,6 +8,13 @@
       "when": 1794074515296,
       "tag": "0000_add_favorite_rank",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794344121319,
+      "tag": "0001_person_ratings",
+      "breakpoints": true
     }
   ]
 }
