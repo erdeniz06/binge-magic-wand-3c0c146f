@@ -9,7 +9,9 @@ import { JournalScreen } from "./JournalScreen";
 import { NewsScreen } from "./NewsScreen";
 import type { Show } from "@/lib/bingebox-data";
 import { getTvShows, TMDB_IMAGE_BASE } from "@/lib/tmdb.functions";
-import { TMDB_CATEGORIES } from "@/lib/tmdb-categories";
+import { TMDB_CATEGORIES, TOP_RATED_PARAMS } from "@/lib/tmdb-categories";
+import { useUserCountry } from "@/lib/use-user-country";
+import { countryName } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { tvTitle } from "@/lib/format";
 import turkishTeaGlass from "@/assets/turkish-tea-glass-red.png";
@@ -77,9 +79,26 @@ function statusAccent(q: { isLoading: boolean; isError: boolean }) {
 export function HomeScreen() {
   const [top, setTop] = useState<Top>("series");
   const userLanguage = getUserLanguage();
+  const { country } = useUserCountry();
+  const isTurkey = country === "TR";
 
   const greatestQ = useCategory("100-greatest-shows", userLanguage);
-  const turkishQ = useCategory("turkish-classics", userLanguage);
+  // Local series row: Turkish classics for TR users, top-rated series from
+  // the user's own country otherwise.
+  const localQ = useQuery({
+    queryKey: ["tmdb", "local-shows", country, userLanguage],
+    queryFn: () =>
+      getTvShows({
+        data: {
+          endpoint: "/discover/tv",
+          language: userLanguage,
+          params: isTurkey
+            ? { ...(TMDB_CATEGORIES["turkish-classics"].params ?? {}) }
+            : { with_origin_country: country, ...TOP_RATED_PARAMS, "vote_count.gte": "100" },
+        },
+      }),
+    staleTime: 1000 * 60 * 60 * 12,
+  });
   const sitcomsQ = useCategory("top-10-sitcoms", userLanguage);
   const crimeQ = useCategory("top-10-crime", userLanguage);
 
@@ -102,7 +121,8 @@ export function HomeScreen() {
   });
 
   const greatestShows = mapTmdb(greatestQ.data?.results as TmdbShow[] | undefined);
-  const turkishShows = mapTmdb(turkishQ.data?.results as TmdbShow[] | undefined);
+  const localShows = mapTmdb(localQ.data?.results as TmdbShow[] | undefined).slice(0, 50);
+  const localTitle = isTurkey ? "Top 50 Turkish Series" : `Top Series from ${countryName(country)}`;
   const sitcomShows = mapTmdb(sitcomsQ.data?.results as TmdbShow[] | undefined).slice(0, 20);
   const crimeShows = mapTmdb(crimeQ.data?.results as TmdbShow[] | undefined).slice(0, 20);
   const popularShows = mapTmdb(
@@ -114,23 +134,27 @@ export function HomeScreen() {
     <div className="pb-32">
       <header className="px-4 pt-6">
         <div className="flex items-start justify-between">
-          <Link
-            to="/series/$category"
-            params={{ category: "turkish-classics" }}
-            className="flex items-center gap-2"
-          >
-            <img
-              src={turkishTeaGlass}
-              alt=""
-              aria-hidden="true"
-              className="h-12 w-12 object-contain drop-shadow-[0_0_10px_var(--flag)]"
-            />
-            <span className="text-[11px] text-muted-foreground leading-tight">
-              Top 50
-              <br />
-              Turkish
-            </span>
-          </Link>
+          {isTurkey ? (
+            <Link
+              to="/series/$category"
+              params={{ category: "turkish-classics" }}
+              className="flex items-center gap-2"
+            >
+              <img
+                src={turkishTeaGlass}
+                alt=""
+                aria-hidden="true"
+                className="h-12 w-12 object-contain drop-shadow-[0_0_10px_var(--flag)]"
+              />
+              <span className="text-[11px] text-muted-foreground leading-tight">
+                Top 50
+                <br />
+                Turkish
+              </span>
+            </Link>
+          ) : (
+            <span className="w-12" aria-hidden="true" />
+          )}
           <h1 className="text-2xl font-bold tracking-tight pt-1">BingeBox</h1>
           <Link
             to="/series/$category"
@@ -177,12 +201,12 @@ export function HomeScreen() {
             accent={statusAccent(greatestQ)}
           />
           <PosterRow
-            title="Top 50 Turkish Series"
-            shows={turkishShows}
+            title={localTitle}
+            shows={localShows}
             showRating
-            seeAllTo="/series/turkish-classics"
+            seeAllTo={isTurkey ? "/series/turkish-classics" : "/series/popular-this-week"}
             accent={
-              statusAccent(turkishQ) ?? <TeaGlass className="h-8 w-8" />
+              statusAccent(localQ) ?? (isTurkey ? <TeaGlass className="h-8 w-8" /> : null)
             }
           />
           <PosterRow
