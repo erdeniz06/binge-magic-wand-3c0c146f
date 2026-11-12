@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Settings, LogOut, Star, Plus, GripVertical, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddToCategoryDialog } from "./AddToCategoryDialog";
+import { FavoriteActorsRow } from "./FavoriteActorsRow";
 import { FavoriteOrderEditor } from "./FavoriteOrderEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -370,6 +371,13 @@ export function ProfileScreen() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-[11px] tracking-[0.25em] text-muted-foreground uppercase">
+          Favorite Actors
+        </h2>
+        <FavoriteActorsRow />
       </section>
 
       <section className="space-y-3">
