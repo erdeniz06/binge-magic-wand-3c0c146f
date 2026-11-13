@@ -1,17 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Star } from "lucide-react";
+import { Film, Star } from "lucide-react";
 import { getFavoriteActors } from "@/lib/favorite-actors";
 import { getTvShows } from "@/lib/tmdb.functions";
+import { useUserShows } from "@/lib/user-shows";
 
 const PROFILE_IMG = "https://image.tmdb.org/t/p/w185";
 
 type PersonInfo = { name: string; profile_path: string | null };
+type Credits = { cast?: { id: number }[] };
 
 /**
  * "Favorite Actors" — built automatically from the user's actor ratings.
  * No manual picking: rate an actor's performance on their page and they
- * appear here, ranked by average score.
+ * appear here, ranked by average score. Each tile also shows how many times
+ * they act in shows the user has on their list.
  */
 export function FavoriteActorsRow() {
   const actorsQ = useQuery({
@@ -21,6 +24,9 @@ export function FavoriteActorsRow() {
   });
 
   const actors = actorsQ.data ?? [];
+
+  const showsQ = useUserShows();
+  const tracked = new Map<number, string>((showsQ.data ?? []).map((s) => [s.tmdb_id, s.title]));
 
   const peopleQ = useQuery({
     queryKey: ["favorite-actors", "people", actors.map((a) => a.personId).join(",")],
@@ -37,6 +43,29 @@ export function FavoriteActorsRow() {
             out[a.personId] = { name: p.name, profile_path: p.profile_path };
           } catch {
             // A person that fails to load just keeps the fallback initial.
+          }
+        }),
+      );
+      return out;
+    },
+  });
+
+  // Which of the user's shows each actor actually appears in.
+  const creditsQ = useQuery({
+    queryKey: ["favorite-actors", "credits", actors.map((a) => a.personId).join(",")],
+    enabled: actors.length > 0,
+    staleTime: 1000 * 60 * 60 * 24,
+    queryFn: async () => {
+      const out: Record<number, number[]> = {};
+      await Promise.all(
+        actors.map(async (a) => {
+          try {
+            const c = (await getTvShows({
+              data: { endpoint: `/person/${a.personId}/tv_credits`, language: "en-US" },
+            })) as unknown as Credits;
+            out[a.personId] = (c.cast ?? []).map((x) => x.id);
+          } catch {
+            // No credits loaded: the tile falls back to the number of ratings.
           }
         }),
       );
@@ -67,11 +96,22 @@ export function FavoriteActorsRow() {
   }
 
   const people = peopleQ.data ?? {};
+  const credits = creditsQ.data ?? {};
 
   return (
     <div className="flex gap-3 overflow-x-auto no-scrollbar">
       {actors.map((a, i) => {
         const p = people[a.personId];
+        const castIn = credits[a.personId];
+        const seen = castIn
+          ? [...new Set(castIn)].filter((id) => tracked.has(id)).map((id) => tracked.get(id)!)
+          : null;
+        const count = seen ? seen.length : a.ratedShows;
+        const hint = seen
+          ? seen.length > 0
+            ? `In ${seen.length} of your shows: ${seen.join(", ")}`
+            : `Rated in ${a.ratedShows} ${a.ratedShows === 1 ? "performance" : "performances"}, none of their shows are on your list`
+          : `Rated in ${a.ratedShows} ${a.ratedShows === 1 ? "performance" : "performances"}`;
         return (
           <Link
             key={a.personId}
@@ -103,6 +143,13 @@ export function FavoriteActorsRow() {
             <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-0.5">
               <Star className="w-2.5 h-2.5 fill-[var(--gold)] text-[var(--gold)]" />
               {a.avg.toFixed(1)}
+            </p>
+            <p
+              className="text-[9px] text-muted-foreground flex items-center justify-center gap-0.5"
+              title={hint}
+            >
+              <Film className="w-2.5 h-2.5" />
+              {count} {count === 1 ? "show" : "shows"}
             </p>
           </Link>
         );
